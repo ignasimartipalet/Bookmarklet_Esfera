@@ -95,7 +95,6 @@ if(isA){
   function close(){ov.remove();}
   ov.addEventListener('click',e=>{if(e.target===ov)close();});
 
-  // Obté files vàlides: tenen input[name="qualitativa"] no disabled i no és baixa
   function gR(){
     return Array.from(_qa('table[data-st-table="dummyStudents"] tbody tr')).filter(r=>{
       const inp=r.querySelector('input[name="qualitativa"]');
@@ -103,7 +102,6 @@ if(isA){
       return inp&&!inp.disabled&&!(td1&&td1.classList.contains('cursiva'));
     });
   }
-  // Nom: 1r cognom (td2) + 2n cognom (td3) + nom (td4)
   function gN(row){
     const td2=row.querySelector('td:nth-child(2)');
     const td3=row.querySelector('td:nth-child(3)');
@@ -111,28 +109,25 @@ if(isA){
     const parts=[td2,td3,td4].map(t=>t?t.textContent.trim():'').filter(Boolean);
     return parts.join(' ');
   }
-  // Té nota?
+
+  // ✅ FIX BUG 1: detectar nota via classe ng-not-empty (no via .value)
   function rN(row){
     const inp=row.querySelector('input[name="qualitativa"]');
-    return inp&&inp.value&&inp.value.trim()!=='';
+    if(!inp)return false;
+    return inp.classList.contains('ng-not-empty');
   }
-  // Té comentari? (la icona no té classe "emptyIcon" sola quan hi ha comentari)
-  function rCm(row){
-    const btn=row.querySelector('a.glyphicon.glyphicon-new-window');
-    if(!btn)return false;
-    return !btn.classList.contains('emptyIcon')||btn.classList.contains('breadcrumbNavigationDisabeld')?false:
-           !btn.classList.contains('emptyIcon');
-  }
-  // Detecció comentari: la classe emptyIcon desapareix quan hi ha comentari
+
+  // ✅ FIX BUG 3: detectar comentari via absència de classe emptyIcon
   function hasComment(row){
     const btn=row.querySelector('a.glyphicon.glyphicon-new-window');
     if(!btn)return false;
     return !btn.classList.contains('emptyIcon');
   }
+
   function hN(){return gR().some(rN);}
   function hC(){return gR().some(hasComment);}
 
-  // Aplica notes des de text TSV
+  // ✅ FIX BUG 2: aplicar notes via angular.element per notificar AngularJS
   function aN(text,idx2,wM){
     const vals=text.split('\n').map(s=>s.trim());
     const rows=gR();
@@ -144,14 +139,18 @@ if(isA){
       const v=vals[i];if(v==='')continue;
       const inp=row.querySelector('input[name="qualitativa"]');
       if(inp){
-        inp.value=v;
-        inp.dispatchEvent(new Event('input',{bubbles:true}));
-        inp.dispatchEvent(new Event('change',{bubbles:true}));
-        // Disparar també l'event d'AngularJS
+        // Usar angular.element per actualitzar el model i disparar el digest
         try{
-  angular.element(inp).triggerHandler('input');
-  angular.element(inp).triggerHandler('change');
-}catch(e){}
+          const $el=angular.element(inp);
+          $el.val(v);
+          $el.triggerHandler('input');
+          $el.triggerHandler('change');
+        }catch(e){
+          // Fallback si angular no és accessible
+          inp.value=v;
+          inp.dispatchEvent(new Event('input',{bubbles:true}));
+          inp.dispatchEvent(new Event('change',{bubbles:true}));
+        }
       }
     }
     return sk;
@@ -169,16 +168,20 @@ if(isA){
       if(wM==='skip'&&hasComment(row)){sk.push(gN(row));next(i+1);return;}
       const c=(cm[i]||'').trim();
       const btn=row.querySelector('a.glyphicon.glyphicon-new-window');
-      if(!btn||btn.classList.contains('breadcrumbNavigationDisabeld')){next(i+1);return;}
+      if(!btn){next(i+1);return;}
       btn.click();
       _st(()=>{
-        // Modal de batxillerat: textarea amb data-ng-model="commentsToModify.commentsToModifyModal"
         const ta=_q('textarea[data-ng-model="commentsToModify.commentsToModifyModal"]');
         const save=_q('a.btn.btn-primary[data-ng-click="modalSave()"]');
         if(!ta||!save){next(i);return;}
-        ta.value=c;
-        ta.dispatchEvent(new InputEvent('input',{bubbles:true}));
-        try{angular.element(ta).triggerHandler('input');}catch(e){}
+        try{
+          const $ta=angular.element(ta);
+          $ta.val(c);
+          $ta.triggerHandler('input');
+        }catch(e){
+          ta.value=c;
+          ta.dispatchEvent(new InputEvent('input',{bubbles:true}));
+        }
         save.click();
         _st(()=>next(i+1),600);
       },600);
