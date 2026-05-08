@@ -148,7 +148,10 @@ if(isA){
         inp.dispatchEvent(new Event('input',{bubbles:true}));
         inp.dispatchEvent(new Event('change',{bubbles:true}));
         // Disparar també l'event d'AngularJS
-        try{angular.element(inp).triggerHandler('change');}catch(e){}
+        try{
+  angular.element(inp).triggerHandler('input');
+  angular.element(inp).triggerHandler('change');
+}catch(e){}
       }
     }
     return sk;
