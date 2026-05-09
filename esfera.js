@@ -1,4 +1,6 @@
 javascript:(function(){/* © 2026 Ignasi Martí Palet */
+if(window.esferaLoaded) return;
+window.esferaLoaded = true;
 Element.prototype.ap=Element.prototype.appendChild;
 var _c=(...a)=>document.createElement(...a);
 var _q=(...a)=>document.querySelector(...a);
