@@ -270,35 +270,31 @@ if(isA){
   function aN(text,idx2,wM){
     const grades=text.split('\n').map(s=>s.split('\t'));
     const rows=gR();const tg=idx2!==null?idx2.map(i=>rows[i]):rows;const sk=[];
+    // Detecta BATX parcial: les files tenen input[data-ng-class]
+    const isBP=tg.some(r=>r&&r.querySelector('input[data-ng-class]'));
+    if(isBP){
+      // Pas 1: escriu tots els valors primer
+      const upd=[];
+      for(let i=0;i<grades.length&&i<tg.length;i++){
+        const row=tg[i];if(!row)continue;
+        if(wM==='skip'&&rN(row)){sk.push(gN(row));continue;}
+        const v=(grades[i][0]||'').trim();if(v==='')continue;
+        const inp=row.querySelector('input[data-ng-class]')||row.querySelector('input[name="qualitativa"]');
+        if(inp&&!inp.disabled&&inp.offsetParent!==null)upd.push({inp,v});
+      }
+      upd.forEach(({inp,v})=>inp.value=v);
+      // Pas 2: dispara tots els events després
+      upd.forEach(({inp})=>{
+        inp.dispatchEvent(new InputEvent('input',{bubbles:true}));
+        inp.dispatchEvent(new Event('change',{bubbles:true}));
+      });
+      return sk;
+    }
+    // ESO: td:nth-child(6+j)
     for(let i=0;i<grades.length&&i<tg.length;i++){
       const row=tg[i];if(!row)continue;
       if(wM==='skip'&&rN(row)){sk.push(gN(row));continue;}
       const sg=grades[i];
-      // BATX parcial: input[name="qualitativa"] → Angular scope + fallback DOM
-      const qInp=row.querySelector('input[name="qualitativa"]');
-      if(qInp){
-        const v=(sg[0]||'').trim();if(v==='')continue;
-        let ok=false;
-        try{
-          const scope=angular.element(row).scope();
-          scope.$apply(()=>{
-            const alumne=scope.alumne||scope.$parent?.alumne;
-            if(!alumne)return;
-            (alumne.asig||[]).forEach(a=>(a.elem||[]).forEach(e=>{
-              if(e.hasOwnProperty('quantitativa'))e.quantitativa=v;
-            }));
-          });
-          ok=true;
-        }catch(e){}
-        if(!ok){
-          qInp.value=v;
-          qInp.dispatchEvent(new Event('input',{bubbles:true}));
-          qInp.dispatchEvent(new Event('change',{bubbles:true}));
-          try{angular.element(qInp).triggerHandler('input');angular.element(qInp).triggerHandler('change');}catch(e){}
-        }
-        continue;
-      }
-      // ESO: td:nth-child(6+j)
       for(let j=0;j<sg.length;j++){
         if(sg[j]!==''){
           const sel=row.querySelector(`td:nth-child(${6+j})>div>div>select`);
