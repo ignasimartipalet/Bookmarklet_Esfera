@@ -267,7 +267,48 @@ if(isA){
   function hN(){return gR().some(rN);}
   function hC(){return gR().some(rCm);}
 
-  function aN(text,idx2,wM){const grades=text.split('\n').map(s=>s.split('\t'));const rows=gR();const tg=idx2!==null?idx2.map(i=>rows[i]):rows;const sk=[];for(let i=0;i<grades.length&&i<tg.length;i++){const row=tg[i];if(!row)continue;if(wM==='skip'&&rN(row)){sk.push(gN(row));continue;}const sg=grades[i];for(let j=0;j<sg.length;j++){if(sg[j]!==''){const sel=row.querySelector(`td:nth-child(${6+j})>div>div>select`);if(sel){sel.value='string:'+sg[j].trim();sel.dispatchEvent(new Event('change'));}else{const inp=row.querySelector(`td:nth-child(${6+j}) input[type="text"]`)||row.querySelector(`td:nth-child(${6+j}) input[type="number"]`)||row.querySelector(`td:nth-child(${6+j}) input`);if(inp){inp.value=sg[j].trim();inp.dispatchEvent(new Event('input',{bubbles:true}));inp.dispatchEvent(new Event('change',{bubbles:true}));}}}}}return sk;}
+  function aN(text,idx2,wM){
+    const grades=text.split('\n').map(s=>s.split('\t'));
+    const rows=gR();const tg=idx2!==null?idx2.map(i=>rows[i]):rows;const sk=[];
+    for(let i=0;i<grades.length&&i<tg.length;i++){
+      const row=tg[i];if(!row)continue;
+      if(wM==='skip'&&rN(row)){sk.push(gN(row));continue;}
+      const sg=grades[i];
+      // BATX parcial: input[name="qualitativa"] → Angular scope + fallback DOM
+      const qInp=row.querySelector('input[name="qualitativa"]');
+      if(qInp){
+        const v=(sg[0]||'').trim();if(v==='')continue;
+        let ok=false;
+        try{
+          const scope=angular.element(row).scope();
+          scope.$apply(()=>{
+            const alumne=scope.alumne||scope.$parent?.alumne;
+            if(!alumne)return;
+            (alumne.asig||[]).forEach(a=>(a.elem||[]).forEach(e=>{
+              if(e.hasOwnProperty('quantitativa'))e.quantitativa=v;
+            }));
+          });
+          ok=true;
+        }catch(e){}
+        if(!ok){
+          qInp.value=v;
+          qInp.dispatchEvent(new Event('input',{bubbles:true}));
+          qInp.dispatchEvent(new Event('change',{bubbles:true}));
+          try{angular.element(qInp).triggerHandler('input');angular.element(qInp).triggerHandler('change');}catch(e){}
+        }
+        continue;
+      }
+      // ESO: td:nth-child(6+j)
+      for(let j=0;j<sg.length;j++){
+        if(sg[j]!==''){
+          const sel=row.querySelector(`td:nth-child(${6+j})>div>div>select`);
+          if(sel){sel.value='string:'+sg[j].trim();sel.dispatchEvent(new Event('change'));}
+          else{const inp=row.querySelector(`td:nth-child(${6+j}) input[type="text"]`)||row.querySelector(`td:nth-child(${6+j}) input[type="number"]`)||row.querySelector(`td:nth-child(${6+j}) input`);if(inp){inp.value=sg[j].trim();inp.dispatchEvent(new Event('input',{bubbles:true}));inp.dispatchEvent(new Event('change',{bubbles:true}));}}
+        }
+      }
+    }
+    return sk;
+  }
 
   // aC: selectora de textarea amb prefix vm. (BATX parcial) i fallback genèric (ESO)
   function aC(text,idx2,wM,cb){
