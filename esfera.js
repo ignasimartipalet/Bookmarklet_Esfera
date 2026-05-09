@@ -241,27 +241,27 @@ if(isA){
   function close(){ov.remove();}
   ov.addEventListener('click',e=>{if(e.target===ov)close();});
 
-  // gR: accepta files amb td:nth-child(6) (ESO) O amb input[name="qualitativa"] (BATX parcial)
+  // gR: accepta files ESO (td:nth-child(6)), BATX parcial (input[name="qualitativa"] o botó comentari)
   function gR(){
     return Array.from(_qa('#my-tab-content tbody tr')).filter(r=>{
-      const td1=r.querySelector('td:nth-child(1)');
-      if(td1&&td1.classList.contains('cursiva'))return false;
+      if(r.querySelector('.cursiva'))return false; // cursiva en qualsevol lloc de la fila
       const s6=r.querySelector('td:nth-child(6)>div>div>select')||r.querySelector('td:nth-child(6) input[type="text"]')||r.querySelector('td:nth-child(6) input[type="number"]')||r.querySelector('td:nth-child(6) input');
       if(s6&&!s6.disabled)return true;
       const q=r.querySelector('input[name="qualitativa"]');
-      return q&&!q.disabled;
+      if(q&&!q.disabled)return true;
+      return !!r.querySelector('a.glyphicon-new-window');
     });
   }
   function gN(row){const td=row.querySelector('td:nth-child(2)');return td?td.textContent.trim():'';}
 
-  // rN: comprova nota a td:nth-child(6) (ESO) o input[name="qualitativa"] (BATX parcial)
+  // rN: ESO → td:nth-child(6); BATX parcial → qualitativa (valor DOM o classe ng-not-empty)
   function rN(row){
     const s=row.querySelector('td:nth-child(6)>div>div>select');
     if(s)return s.value&&s.value!==''&&s.value!=='string:';
     const inp=row.querySelector('td:nth-child(6) input[type="text"]')||row.querySelector('td:nth-child(6) input[type="number"]')||row.querySelector('td:nth-child(6) input');
     if(inp)return inp.value&&inp.value.trim()!=='';
     const q=row.querySelector('input[name="qualitativa"]');
-    return q&&q.value&&q.value.trim()!=='';
+    return q&&(q.value.trim()!==''||q.classList.contains('ng-not-empty'));
   }
   function rCm(row){const btn=row.querySelector('a.glyphicon.glyphicon-new-window');if(!btn)return false;const td=btn.closest('td');if(!td)return false;if(td.querySelector('.badge,.label,span[class*="comment"],span[class*="count"]'))return true;const txt=Array.from(td.childNodes).filter(n=>n.nodeType===3).map(n=>n.textContent.trim()).join('');if(/\d+/.test(txt))return true;if(btn.classList.length>2)return true;if(btn.getAttribute('title')||btn.getAttribute('data-original-title'))return true;return false;}
   function hN(){return gR().some(rN);}
@@ -279,7 +279,7 @@ if(isA){
       if(i>=cm.length||i>=tg.length){cb(sk);return;}
       const row=tg[i];if(!row){next(i+1);return;}
       if(wM==='skip'&&rCm(row)){sk.push(gN(row));next(i+1);return;}
-      const btn=row.querySelector('a.glyphicon.glyphicon-new-window');
+      const btn=row.querySelector('a.glyphicon-new-window');
       if(!btn){next(i+1);return;}
       btn.click();
       _st(()=>{
