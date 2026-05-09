@@ -270,20 +270,21 @@ if(isA){
   function aN(text,idx2,wM){
     const grades=text.split('\n').map(s=>s.split('\t'));
     const rows=gR();const tg=idx2!==null?idx2.map(i=>rows[i]):rows;const sk=[];
-    // Detecta BATX parcial: les files tenen input[data-ng-class]
-    const isBP=tg.some(r=>r&&r.querySelector('input[data-ng-class]'));
-    if(isBP){
-      // Pas 1: escriu tots els valors primer
+    // Detecta BATX parcial: existeixen input[data-ng-class] visibles al document
+    const batxInps=[...document.querySelectorAll('input[data-ng-class]')]
+      .filter(i=>!i.disabled&&i.offsetParent!==null);
+    if(batxInps.length>0){
+      const tgInps=idx2!==null?idx2.map(i=>batxInps[i]):batxInps;
       const upd=[];
-      for(let i=0;i<grades.length&&i<tg.length;i++){
-        const row=tg[i];if(!row)continue;
-        if(wM==='skip'&&rN(row)){sk.push(gN(row));continue;}
+      for(let i=0;i<grades.length&&i<tgInps.length;i++){
+        const inp=tgInps[i];if(!inp)continue;
+        if(wM==='skip'&&tg[i]&&rN(tg[i])){sk.push(gN(tg[i]));continue;}
         const v=(grades[i][0]||'').trim();if(v==='')continue;
-        const inp=row.querySelector('input[data-ng-class]')||row.querySelector('input[name="qualitativa"]');
-        if(inp&&!inp.disabled&&inp.offsetParent!==null)upd.push({inp,v});
+        upd.push({inp,v});
       }
+      // Pas 1: escriu tots els valors
       upd.forEach(({inp,v})=>inp.value=v);
-      // Pas 2: dispara tots els events després
+      // Pas 2: dispara tots els events
       upd.forEach(({inp})=>{
         inp.dispatchEvent(new InputEvent('input',{bubbles:true}));
         inp.dispatchEvent(new Event('change',{bubbles:true}));
