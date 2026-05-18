@@ -105,43 +105,26 @@ if(isA){
     return el.value?el.value.trim():'';
   }
 
-  function o2(){tM();let total=0,mm={},sm={},aP=new Set(),mC={},al=[];let prog=cP("Alumnes: 0");
+  function o2(){tM();let total=0,mm={},sm={},al=[];let prog=cP("Alumnes: 0");
 
-  // Funció polimòrfica: retorna els elements de nota de la fila actual
   function gElements(){
     if(batxAmbInputs) return gInpQ();
     return gSelQ();
   }
-  // Necessitem un element ancla per detectar quin alumne és actiu
-  // Per batxAmbInputs: usem el primer input quantitatiu visible
-  function getAnclaBtn(){
-    return _q("a.btn.btn-warning[data-ng-click='showCommentsModal()']");
-  }
 
   function pr(){
     let els=gElements();
-    let bt=getAnclaBtn();
-    if(!bt&&!batxAmbInputs)return;
-    // ID de l'alumne: si hi ha botó el traiem de la seva fila, si no usem total
-    let alumID;
-    if(bt){alumID=bt.closest("tr")?bt.closest("tr").textContent.trim():total;}
-    else{alumID='alumne_'+total;}
-    if(aP.has(alumID))return;
-    aP.add(alumID);
+    if(!els.length)return;
     let susp=0,matsSusp=[];
     els.forEach(el=>{
       const mat=getNomMateria(el);
-      const matID=alumID+"||"+mat;
-      if(!mC[matID]){
-        mC[matID]=true;
-        const nota=getNotaEl(el);
-        if(nota!==''){
-          if(esSuspes(nota)){mm[mat]=(mm[mat]||0)+1;susp++;matsSusp.push(mat);}
-          else{mm[mat]=mm[mat]||0;}
-        }
+      const nota=getNotaEl(el);
+      if(nota!==''){
+        if(esSuspes(nota)){mm[mat]=(mm[mat]||0)+1;susp++;matsSusp.push(mat);}
+        else{mm[mat]=mm[mat]||0;}
       }
     });
-    sm[alumID]=susp;al.push({num:total+1,count:susp,mats:matsSusp});total++;sP(prog,"Alumnes: "+total);}
+    sm[total]=susp;al.push({num:total+1,count:susp,mats:matsSusp});total++;sP(prog,"Alumnes: "+total);}
 
   function sg(){let next=_q("a[data-ng-click=\"canviAlumne('next')\"]");if(next&&!next.hasAttribute("disabled")){angular.element(next).triggerHandler('click');return true;}return false;}
 
@@ -158,36 +141,26 @@ if(isA){
   function acabar(){sP(prog,"Processament complet! ✓");mR(total,mm,sm,al);}
   function loop(){eE(()=>{pr();if(sg()){_st(loop,150);}else{acabar();}});}loop();}
 
-  function o3(){tM();dC(function(text){if(!text.trim())return;let cm=text.split("\n");let i=0;let total=0,mm={},sm={},aP=new Set(),mC={},al=[];let prog=cP("Processant: 0 / "+cm.length);
+  function o3(){tM();dC(function(text){if(!text.trim())return;let cm=text.split("\n");let i=0;let total=0,mm={},sm={},al=[];let prog=cP("Processant: 0 / "+cm.length);
 
   function gElements(){
     if(batxAmbInputs) return gInpQ();
     return gSelQ();
   }
-  function getAnclaBtn(){return _q("a.btn.btn-warning[data-ng-click='showCommentsModal()']");}
 
   function pD(){
     let els=gElements();
-    let bt=getAnclaBtn();
-    let alumID;
-    if(bt){alumID=bt.closest("tr")?bt.closest("tr").textContent.trim():total;}
-    else{alumID='alumne_'+total;}
-    if(aP.has(alumID))return;
-    aP.add(alumID);
+    if(!els.length)return;
     let susp=0,matsSusp=[];
     els.forEach(el=>{
       const mat=getNomMateria(el);
-      const matID=alumID+"||"+mat;
-      if(!mC[matID]){
-        mC[matID]=true;
-        const nota=getNotaEl(el);
-        if(nota!==''){
-          if(esSuspes(nota)){mm[mat]=(mm[mat]||0)+1;susp++;matsSusp.push(mat);}
-          else{mm[mat]=mm[mat]||0;}
-        }
+      const nota=getNotaEl(el);
+      if(nota!==''){
+        if(esSuspes(nota)){mm[mat]=(mm[mat]||0)+1;susp++;matsSusp.push(mat);}
+        else{mm[mat]=mm[mat]||0;}
       }
     });
-    sm[alumID]=susp;al.push({num:total+1,count:susp,mats:matsSusp});total++;}
+    sm[total]=susp;al.push({num:total+1,count:susp,mats:matsSusp});total++;}
 
   function eE(cb){
     let lC=0,sT=0;
