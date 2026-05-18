@@ -25,23 +25,26 @@ if(isA){
   const F="font-family:'Outfit',system-ui,sans-serif;box-sizing:border-box;";
 
   // Detecta si la pàgina de tutoria és de batxillerat:
-  // 1) selects amb valors numèrics, O BÉ
-  // 2) inputs[name="quantitativa"] visibles (batx sense desplegables)
+  // 1) selects amb valors numèrics
+  // 2) inputs[name="quantitativa"] visibles (batx finals)
+  // 3) inputs[name="qualitativa"][type="number"] visibles (batx parcials)
   function detectarBatxTutoria(){
     const primerSelect=_q("select[data-ng-model='contingut.qualitativa']");
     if(primerSelect&&Array.from(primerSelect.options).some(o=>{
       const v=o.value.replace('string:','');
       return !isNaN(parseFloat(v));
     }))return true;
-    // detecció per inputs quantitatius (batx sense selects)
-    const inpQ=[...document.querySelectorAll('input[name="quantitativa"]')].filter(el=>el.offsetParent!==null);
-    return inpQ.length>0;
+    if([...document.querySelectorAll('input[name="quantitativa"]')].filter(el=>el.offsetParent!==null).length>0)return true;
+    if([...document.querySelectorAll('input[name="qualitativa"][type="number"]')].filter(el=>el.offsetParent!==null).length>0)return true;
+    return false;
   }
   const esBatxTutoria=detectarBatxTutoria();
 
-  // Detecta si hi ha inputs quantitatius visibles (batx té els dos: input + select)
+  // batxAmbInputs: true si les notes són en inputs (finals=quantitativa, parcials=qualitativa type=number)
   function usaInputsQuantitatius(){
-    return [...document.querySelectorAll('input[name="quantitativa"]')].filter(el=>el.offsetParent!==null).length>0;
+    if([...document.querySelectorAll('input[name="quantitativa"]')].filter(el=>el.offsetParent!==null).length>0)return true;
+    if([...document.querySelectorAll('input[name="qualitativa"][type="number"]')].filter(el=>el.offsetParent!==null).length>0)return true;
+    return false;
   }
   const batxAmbInputs=usaInputsQuantitatius();
 
@@ -86,7 +89,9 @@ if(isA){
   // ── Helpers per llegir notes a tutoria batx amb inputs quantitatius ─────────
   // Retorna els inputs de nota visibles de la fila actual
   function gInpQ(){
-    return [...document.querySelectorAll('input[name="quantitativa"]')].filter(el=>el.offsetParent!==null);
+    const q=[...document.querySelectorAll('input[name="quantitativa"]')].filter(el=>el.offsetParent!==null);
+    if(q.length>0)return q;
+    return [...document.querySelectorAll('input[name="qualitativa"][type="number"]')].filter(el=>el.offsetParent!==null);
   }
   // Retorna els selects de nota visibles (ESO / batx amb selects)
   function gSelQ(){
