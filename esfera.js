@@ -118,10 +118,10 @@ if(isA){
     let susp=0,matsSusp=[];
     els.forEach(el=>{
       const mat=getNomMateria(el);
+      if(mat&&!(mat in mm))mm[mat]=0;
       const nota=getNotaEl(el);
-      if(nota!==''){
-        if(esSuspes(nota)){mm[mat]=(mm[mat]||0)+1;susp++;matsSusp.push(mat);}
-        else{mm[mat]=mm[mat]||0;}
+      if(nota!==''&&mat){
+        if(esSuspes(nota)){mm[mat]++;susp++;matsSusp.push(mat);}
       }
     });
     sm[total]=susp;al.push({num:total+1,count:susp,mats:matsSusp});total++;sP(prog,"Alumnes: "+total);}
@@ -154,10 +154,10 @@ if(isA){
     let susp=0,matsSusp=[];
     els.forEach(el=>{
       const mat=getNomMateria(el);
+      if(mat&&!(mat in mm))mm[mat]=0;
       const nota=getNotaEl(el);
-      if(nota!==''){
-        if(esSuspes(nota)){mm[mat]=(mm[mat]||0)+1;susp++;matsSusp.push(mat);}
-        else{mm[mat]=mm[mat]||0;}
+      if(nota!==''&&mat){
+        if(esSuspes(nota)){mm[mat]++;susp++;matsSusp.push(mat);}
       }
     });
     sm[total]=susp;al.push({num:total+1,count:susp,mats:matsSusp});total++;}
