@@ -24,6 +24,27 @@ if(isA){
   document.head.ap(styleEl);
   const F="font-family:'Outfit',system-ui,sans-serif;box-sizing:border-box;";
 
+  // Detecta si la pàgina de tutoria és de batxillerat (notes numèriques als selects)
+  function detectarBatxTutoria(){
+    const primerSelect=_q("select[data-ng-model='contingut.qualitativa']");
+    if(!primerSelect)return false;
+    return Array.from(primerSelect.options).some(o=>{
+      const v=o.value.replace('string:','');
+      return !isNaN(parseFloat(v));
+    });
+  }
+  const esBatxTutoria=detectarBatxTutoria();
+
+  // Funció central per decidir si una nota és suspès
+  function esSuspes(nota){
+    if(nota==="NA")return true;
+    if(esBatxTutoria){
+      const num=parseFloat(nota);
+      return !isNaN(num)&&num<5;
+    }
+    return false;
+  }
+
   function cO(html,tancarFn){let ov=_c('div');ov.style.cssText='position:fixed;inset:0;background:rgba(10,10,20,0.5);backdrop-filter:blur(6px);z-index:999999;display:flex;align-items:center;justify-content:center';let box=_c('div');box.style.cssText=F+'background:#fff;border-radius:20px;padding:36px;min-width:360px;max-width:min(92vw,520px);box-shadow:0 32px 80px rgba(0,0,0,0.18),0 2px 8px rgba(0,0,0,0.06);animation:tutorFadeIn 0.22s ease';box.innerHTML=html;ov.ap(box);_ba(ov);if(tancarFn)ov.addEventListener('click',e=>{if(e.target===ov)tancarFn(ov);});return ov;}
   function cP(text){let d=_c('div');d.style.cssText=F+'position:fixed;top:20px;right:20px;padding:12px 20px;background:#0f0f1a;color:#fff;font-size:13px;font-weight:500;border-radius:100px;z-index:999998;box-shadow:0 8px 28px rgba(0,0,0,0.22);display:flex;align-items:center;gap:10px';d.innerHTML='<span style="width:8px;height:8px;border-radius:50%;background:#4ade80;display:inline-block;animation:tutorPulse 1.2s infinite"></span><span id="tutorProgressText">'+text+'</span>';_ba(d);return d;}
   function sP(prog,t){let el=prog.querySelector('#tutorProgressText');if(el)el.textContent=t;}
@@ -48,26 +69,27 @@ if(isA){
   function dC(callback){let html='<div style="'+F+'text-align:center"><div style="width:52px;height:52px;background:#0f0f1a;border-radius:16px;display:inline-flex;align-items:center;justify-content:center;font-size:26px;margin-bottom:16px">💬</div><h2 style="'+F+'margin:0 0 6px;font-size:21px;font-weight:700;color:#0f0f1a">Comentaris</h2><p style="'+F+'margin:0 0 20px;font-size:13px;color:#9ca3af">Enganxa els comentaris (un per alumne)</p><textarea id="tutorTA" placeholder="Comentari alumne 1&#10;Comentari alumne 2&#10;Comentari alumne 3&#10;..." style="'+F+'width:100%;height:160px;border:1.5px solid #e5e7eb;border-radius:12px;padding:14px;font-size:13px;color:#0f0f1a;resize:vertical;outline:none;line-height:1.6"></textarea><div style="display:flex;gap:10px;margin-top:16px"><button id="btnCancelCom" style="'+F+'flex:1;padding:13px;font-size:14px;font-weight:600;border:1.5px solid #e5e7eb;border-radius:12px;background:transparent;color:#9ca3af;cursor:pointer">Cancel·lar</button><button id="btnOkCom" style="'+F+'flex:2;padding:13px;font-size:14px;font-weight:600;border:none;border-radius:12px;background:#0f0f1a;color:#fff;cursor:pointer">Continuar →</button></div></div>';
   let ov=cO(html,null);_st(()=>{let ta=_id('tutorTA');if(ta)ta.focus();let ok=_id('btnOkCom');if(ok)ok.onclick=()=>{let val=ta?ta.value:'';if(ov.parentNode)_rm(ov);callback(val);};let ca=_id('btnCancelCom');if(ca)ca.onclick=()=>{if(ov.parentNode)_rm(ov);};},100);}
 
-  // Badge de tutoria eliminat perquè "Eina de Tutoria" ja ho indica
   let mH='<div style="'+F+'text-align:center"><div style="width:52px;height:52px;background:#0f0f1a;border-radius:16px;display:inline-flex;align-items:center;justify-content:center;font-size:26px;margin-bottom:16px">🎓</div><h2 style="'+F+'margin:0 0 6px;font-size:21px;font-weight:700;color:#0f0f1a">Eina de Tutoria</h2><p style="'+F+'margin:0 0 28px;font-size:13px;color:#9ca3af">Selecciona l\'acció que vols executar</p><div style="display:flex;flex-direction:column;gap:10px"><button id="btn1" style="'+F+'padding:14px 20px;font-size:14px;font-weight:600;border:none;border-radius:12px;background:#0f0f1a;color:#fff;cursor:pointer;display:flex;align-items:center;gap:12px">💬<span>Comentaris de tutor</span></button><button id="btn2" style="'+F+'padding:14px 20px;font-size:14px;font-weight:600;border:none;border-radius:12px;background:#0f0f1a;color:#fff;cursor:pointer;display:flex;align-items:center;gap:12px">📋<span>Acta de tutoria</span></button><button id="btn3" style="'+F+'padding:14px 20px;font-size:14px;font-weight:600;border:2px solid #0f0f1a;border-radius:12px;background:#fff;color:#0f0f1a;cursor:pointer;display:flex;align-items:center;gap:12px">⚡<span>Les dues a la vegada</span></button><button id="btnX" style="'+F+'padding:10px 20px;font-size:13px;font-weight:500;border:1.5px solid #e5e7eb;border-radius:12px;background:transparent;color:#9ca3af;cursor:pointer;margin-top:2px">Cancel·lar</button><p style="font-size:11px;color:#9ca3af;text-align:center;margin-top:14px;margin-bottom:0">© 2026 Ignasi Martí Palet</p><div></div>';
   let mO=cO(mH,o=>_rm(o));
   function tM(){if(mO.parentNode)_rm(mO);}
   function o1(){tM();dC(function(text){if(!text.trim())return;let cm=text.split("\n");let i=0;let prog=cP("Comentaris: 0 / "+cm.length);function run(){if(i>=cm.length){sP(prog,"Tots els comentaris processats! ✓");return;}sP(prog,"Comentaris: "+(i+1)+" / "+cm.length);let oB=_q("a[data-ng-click='showCommentsModal()']");if(!oB){_st(run,500);return;}oB.click();let wM=setInterval(function(){let ta=_q("textarea[data-ng-model='comentariGeneral.comentari']");let sC=_q("a[data-ng-click='saveComentariGeneral()']");if(ta&&sC){clearInterval(wM);let c=(cm[i]||"").trim();if(c!==""){ta.value=c;ta.dispatchEvent(new InputEvent("input",{bubbles:true}));sC.click();}_st(function(){let sG=_q("a[data-ng-click='saveNotesAvaluacio()']");if(sG)sG.click();let wS=setInterval(function(){let alerts=_qa(".alert-success");let found=false;alerts.forEach(function(a){if(a.innerText.toLowerCase().includes("desat"))found=true;});if(found){clearInterval(wS);let next=_q("a[data-ng-click=\"canviAlumne('next')\"]");if(!next||next.disabled){sP(prog,"Tots els comentaris processats! ✓");return;}angular.element(next).triggerHandler('click');i++;_st(run,7000);}},500);},2000);}},200);}run();});}
-  function o2(){tM();let total=0,mm={},sm={},aP=new Set(),mC={},al=[];let prog=cP("Alumnes: 0");function gS(){return Array.from(_qa("select[data-ng-model='contingut.qualitativa']")).filter(s=>s.offsetParent!==null);}function pr(){let selects=gS();let bt=_q("a.btn.btn-warning[data-ng-click='showCommentsModal()']");if(!bt)return;let alumID=bt.closest("tr")?bt.closest("tr").textContent.trim():total;if(aP.has(alumID))return;aP.add(alumID);let susp=0,matsSusp=[];selects.forEach(sel=>{let tr=sel.closest("tr");let td=tr?tr.querySelector("td[data-ng-if*='matPNomVis']"):null;if(td){let mat=td.textContent.trim();let matID=alumID+"||"+mat;if(!mC[matID]){mC[matID]=true;let nota=sel.value.replace("string:","");if(nota==="NA"){mm[mat]=(mm[mat]||0)+1;susp++;matsSusp.push(mat);}else{mm[mat]=mm[mat]||0;}}}});sm[alumID]=susp;al.push({num:total+1,count:susp,mats:matsSusp});total++;sP(prog,"Alumnes: "+total);}function sg(){let next=_q("a[data-ng-click=\"canviAlumne('next')\"]");if(next&&!next.hasAttribute("disabled")){angular.element(next).triggerHandler('click');return true;}return false;}function eE(cb){let lC=0,sT=0;let int=setInterval(()=>{let count=gS().length;let bt=_q("a.btn.btn-warning[data-ng-click='showCommentsModal()']");if(bt&&count===lC&&count>0){sT+=100;if(sT>=500){clearInterval(int);cb();}}else{sT=0;lC=count;}},100);}function acabar(){sP(prog,"Processament complet! ✓");mR(total,mm,sm,al);}function loop(){eE(()=>{pr();if(sg()){_st(loop,150);}else{acabar();}});}loop();}
-  function o3(){tM();dC(function(text){if(!text.trim())return;let cm=text.split("\n");let i=0;let total=0,mm={},sm={},aP=new Set(),mC={},al=[];let prog=cP("Processant: 0 / "+cm.length);function gS(){return Array.from(_qa("select[data-ng-model='contingut.qualitativa']")).filter(s=>s.offsetParent!==null);}function pD(){let selects=gS();let bt=_q("a.btn.btn-warning[data-ng-click='showCommentsModal()']");if(!bt)return;let alumID=bt.closest("tr")?bt.closest("tr").textContent.trim():total;if(aP.has(alumID))return;aP.add(alumID);let susp=0,matsSusp=[];selects.forEach(sel=>{let tr=sel.closest("tr");let td=tr?tr.querySelector("td[data-ng-if*='matPNomVis']"):null;if(td){let mat=td.textContent.trim();let matID=alumID+"||"+mat;if(!mC[matID]){mC[matID]=true;let nota=sel.value.replace("string:","");if(nota==="NA"){mm[mat]=(mm[mat]||0)+1;susp++;matsSusp.push(mat);}else{mm[mat]=mm[mat]||0;}}}});sm[alumID]=susp;al.push({num:total+1,count:susp,mats:matsSusp});total++;}function eE(cb){let lC=0,sT=0;let int=setInterval(()=>{let count=gS().length;let bt=_q("a.btn.btn-warning[data-ng-click='showCommentsModal()']");if(bt&&count===lC&&count>0){sT+=100;if(sT>=500){clearInterval(int);cb();}}else{sT=0;lC=count;}},100);}function aA(){sP(prog,"Tot processat! ✓");mR(total,mm,sm,al);}function dP(last){_st(function(){let sG=_q("a[data-ng-click='saveNotesAvaluacio()']");if(sG)sG.click();let wS=setInterval(function(){let alerts=_qa(".alert-success");let found=false;alerts.forEach(function(a){if(a.innerText.toLowerCase().includes("desat"))found=true;});if(found){clearInterval(wS);if(last){aA();return;}let next=_q("a[data-ng-click=\"canviAlumne('next')\"]");if(!next||next.hasAttribute("disabled")){aA();return;}angular.element(next).triggerHandler('click');i++;_st(rC,7000);}},500);},2000);}function eC(last){let c=(cm[i]||"").trim();if(c===""){dP(last);return;}let oB=_q("a[data-ng-click='showCommentsModal()']");if(!oB){_st(()=>eC(last),500);return;}oB.click();let wM=setInterval(function(){let ta=_q("textarea[data-ng-model='comentariGeneral.comentari']");let sC=_q("a[data-ng-click='saveComentariGeneral()']");if(ta&&sC){clearInterval(wM);ta.value=c;ta.dispatchEvent(new InputEvent("input",{bubbles:true}));sC.click();dP(last);}},200);}function rC(){sP(prog,"Processant: "+(i+1)+" / "+cm.length);eE(()=>{pD();let next=_q("a[data-ng-click=\"canviAlumne('next')\"]");let isLast=!next||next.hasAttribute("disabled");eC(isLast);});}rC();});}
- function bindTutoriaButtons(){
-  let b1 = _id("btn1");
-  let b2 = _id("btn2");
-  let b3 = _id("btn3");
-  let bx = _id("btnX");
 
-  if(b1) b1.onclick = o1;
-  if(b2) b2.onclick = o2;
-  if(b3) b3.onclick = o3;
-  if(bx) bx.onclick = tM;
-}
+  function o2(){tM();let total=0,mm={},sm={},aP=new Set(),mC={},al=[];let prog=cP("Alumnes: 0");function gS(){return Array.from(_qa("select[data-ng-model='contingut.qualitativa']")).filter(s=>s.offsetParent!==null);}function pr(){let selects=gS();let bt=_q("a.btn.btn-warning[data-ng-click='showCommentsModal()']");if(!bt)return;let alumID=bt.closest("tr")?bt.closest("tr").textContent.trim():total;if(aP.has(alumID))return;aP.add(alumID);let susp=0,matsSusp=[];selects.forEach(sel=>{let tr=sel.closest("tr");let td=tr?tr.querySelector("td[data-ng-if*='matPNomVis']"):null;if(td){let mat=td.textContent.trim();let matID=alumID+"||"+mat;if(!mC[matID]){mC[matID]=true;let nota=sel.value.replace("string:","");if(esSuspes(nota)){mm[mat]=(mm[mat]||0)+1;susp++;matsSusp.push(mat);}else{mm[mat]=mm[mat]||0;}}}});sm[alumID]=susp;al.push({num:total+1,count:susp,mats:matsSusp});total++;sP(prog,"Alumnes: "+total);}function sg(){let next=_q("a[data-ng-click=\"canviAlumne('next')\"]");if(next&&!next.hasAttribute("disabled")){angular.element(next).triggerHandler('click');return true;}return false;}function eE(cb){let lC=0,sT=0;let int=setInterval(()=>{let count=gS().length;let bt=_q("a.btn.btn-warning[data-ng-click='showCommentsModal()']");if(bt&&count===lC&&count>0){sT+=100;if(sT>=500){clearInterval(int);cb();}}else{sT=0;lC=count;}},100);}function acabar(){sP(prog,"Processament complet! ✓");mR(total,mm,sm,al);}function loop(){eE(()=>{pr();if(sg()){_st(loop,150);}else{acabar();}});}loop();}
 
-_st(bindTutoriaButtons, 100);
+  function o3(){tM();dC(function(text){if(!text.trim())return;let cm=text.split("\n");let i=0;let total=0,mm={},sm={},aP=new Set(),mC={},al=[];let prog=cP("Processant: 0 / "+cm.length);function gS(){return Array.from(_qa("select[data-ng-model='contingut.qualitativa']")).filter(s=>s.offsetParent!==null);}function pD(){let selects=gS();let bt=_q("a.btn.btn-warning[data-ng-click='showCommentsModal()']");if(!bt)return;let alumID=bt.closest("tr")?bt.closest("tr").textContent.trim():total;if(aP.has(alumID))return;aP.add(alumID);let susp=0,matsSusp=[];selects.forEach(sel=>{let tr=sel.closest("tr");let td=tr?tr.querySelector("td[data-ng-if*='matPNomVis']"):null;if(td){let mat=td.textContent.trim();let matID=alumID+"||"+mat;if(!mC[matID]){mC[matID]=true;let nota=sel.value.replace("string:","");if(esSuspes(nota)){mm[mat]=(mm[mat]||0)+1;susp++;matsSusp.push(mat);}else{mm[mat]=mm[mat]||0;}}}});sm[alumID]=susp;al.push({num:total+1,count:susp,mats:matsSusp});total++;}function eE(cb){let lC=0,sT=0;let int=setInterval(()=>{let count=gS().length;let bt=_q("a.btn.btn-warning[data-ng-click='showCommentsModal()']");if(bt&&count===lC&&count>0){sT+=100;if(sT>=500){clearInterval(int);cb();}}else{sT=0;lC=count;}},100);}function aA(){sP(prog,"Tot processat! ✓");mR(total,mm,sm,al);}function dP(last){_st(function(){let sG=_q("a[data-ng-click='saveNotesAvaluacio()']");if(sG)sG.click();let wS=setInterval(function(){let alerts=_qa(".alert-success");let found=false;alerts.forEach(function(a){if(a.innerText.toLowerCase().includes("desat"))found=true;});if(found){clearInterval(wS);if(last){aA();return;}let next=_q("a[data-ng-click=\"canviAlumne('next')\"]");if(!next||next.hasAttribute("disabled")){aA();return;}angular.element(next).triggerHandler('click');i++;_st(rC,7000);}},500);},2000);}function eC(last){let c=(cm[i]||"").trim();if(c===""){dP(last);return;}let oB=_q("a[data-ng-click='showCommentsModal()']");if(!oB){_st(()=>eC(last),500);return;}oB.click();let wM=setInterval(function(){let ta=_q("textarea[data-ng-model='comentariGeneral.comentari']");let sC=_q("a[data-ng-click='saveComentariGeneral()']");if(ta&&sC){clearInterval(wM);ta.value=c;ta.dispatchEvent(new InputEvent("input",{bubbles:true}));sC.click();dP(last);}},200);}function rC(){sP(prog,"Processant: "+(i+1)+" / "+cm.length);eE(()=>{pD();let next=_q("a[data-ng-click=\"canviAlumne('next')\"]");let isLast=!next||next.hasAttribute("disabled");eC(isLast);});}rC();});}
+
+  function bindTutoriaButtons(){
+    let b1=_id("btn1");
+    let b2=_id("btn2");
+    let b3=_id("btn3");
+    let bx=_id("btnX");
+    if(b1)b1.onclick=o1;
+    if(b2)b2.onclick=o2;
+    if(b3)b3.onclick=o3;
+    if(bx)bx.onclick=tM;
+  }
+  _st(bindTutoriaButtons,100);
+
 // ── AVALUACIONS FINALS BATXILLERAT (isBATX) — comprovat ABANS que isM ─────────
 }else if(isBATX){
   if(_id('esfera-overlay-batx'))return;
@@ -254,10 +276,9 @@ _st(bindTutoriaButtons, 100);
   function close(){ov.remove();}
   ov.addEventListener('click',e=>{if(e.target===ov)close();});
 
-  // gR: accepta files ESO (td:nth-child(6)), BATX parcial (input[name="qualitativa"] o botó comentari)
   function gR(){
     return Array.from(_qa('#my-tab-content tbody tr')).filter(r=>{
-      if(r.querySelector('.cursiva'))return false; // cursiva en qualsevol lloc de la fila
+      if(r.querySelector('.cursiva'))return false;
       const s6=r.querySelector('td:nth-child(6)>div>div>select')||r.querySelector('td:nth-child(6) input[type="text"]')||r.querySelector('td:nth-child(6) input[type="number"]')||r.querySelector('td:nth-child(6) input');
       if(s6&&!s6.disabled)return true;
       const q=r.querySelector('input[name="qualitativa"]');
@@ -267,7 +288,6 @@ _st(bindTutoriaButtons, 100);
   }
   function gN(row){const td=row.querySelector('td:nth-child(2)');return td?td.textContent.trim():'';}
 
-  // rN: ESO → td:nth-child(6); BATX parcial → qualitativa (valor DOM o classe ng-not-empty)
   function rN(row){
     const s=row.querySelector('td:nth-child(6)>div>div>select');
     if(s)return s.value&&s.value!==''&&s.value!=='string:';
@@ -283,7 +303,6 @@ _st(bindTutoriaButtons, 100);
   function aN(text,idx2,wM){
     const grades=text.split('\n').map(s=>s.split('\t'));
     const rows=gR();const tg=idx2!==null?idx2.map(i=>rows[i]):rows;const sk=[];
-    // Detecta BATX parcial: existeixen input[data-ng-class] visibles al document
     const batxInps=[...document.querySelectorAll('input[data-ng-class]')]
       .filter(i=>!i.disabled&&i.offsetParent!==null);
     if(batxInps.length>0){
@@ -295,16 +314,13 @@ _st(bindTutoriaButtons, 100);
         const v=(grades[i][0]||'').trim();if(v==='')continue;
         upd.push({inp,v});
       }
-      // Pas 1: escriu tots els valors
       upd.forEach(({inp,v})=>inp.value=v);
-      // Pas 2: dispara tots els events
       upd.forEach(({inp})=>{
         inp.dispatchEvent(new InputEvent('input',{bubbles:true}));
         inp.dispatchEvent(new Event('change',{bubbles:true}));
       });
       return sk;
     }
-    // ESO: td:nth-child(6+j)
     for(let i=0;i<grades.length&&i<tg.length;i++){
       const row=tg[i];if(!row)continue;
       if(wM==='skip'&&rN(row)){sk.push(gN(row));continue;}
@@ -320,7 +336,6 @@ _st(bindTutoriaButtons, 100);
     return sk;
   }
 
-  // aC: selectora de textarea amb prefix vm. (BATX parcial) i fallback genèric (ESO)
   function aC(text,idx2,wM,cb){
     const cm=text.split('\n');
     const rows=gR();
