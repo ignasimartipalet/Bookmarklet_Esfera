@@ -24,18 +24,28 @@ if(isA){
   document.head.ap(styleEl);
   const F="font-family:'Outfit',system-ui,sans-serif;box-sizing:border-box;";
 
-  // Detecta si la pàgina de tutoria és de batxillerat (notes numèriques als selects)
+  // Detecta si la pàgina de tutoria és de batxillerat:
+  // 1) selects amb valors numèrics, O BÉ
+  // 2) inputs[name="quantitativa"] visibles (batx sense desplegables)
   function detectarBatxTutoria(){
     const primerSelect=_q("select[data-ng-model='contingut.qualitativa']");
-    if(!primerSelect)return false;
-    return Array.from(primerSelect.options).some(o=>{
+    if(primerSelect&&Array.from(primerSelect.options).some(o=>{
       const v=o.value.replace('string:','');
       return !isNaN(parseFloat(v));
-    });
+    }))return true;
+    // detecció per inputs quantitatius (batx sense selects)
+    const inpQ=[...document.querySelectorAll('input[name="quantitativa"]')].filter(el=>el.offsetParent!==null);
+    return inpQ.length>0;
   }
   const esBatxTutoria=detectarBatxTutoria();
 
-  // Funció central per decidir si una nota és suspès
+  // Detecta si aquesta pàgina de tutoria usa inputs quantitatius en lloc de selects
+  function usaInputsQuantitatius(){
+    const inpQ=[...document.querySelectorAll('input[name="quantitativa"]')].filter(el=>el.offsetParent!==null);
+    return inpQ.length>0&&!_q("select[data-ng-model='contingut.qualitativa']");
+  }
+  const batxAmbInputs=usaInputsQuantitatius();
+
   function esSuspes(nota){
     if(nota==="NA")return true;
     if(esBatxTutoria){
@@ -74,9 +84,124 @@ if(isA){
   function tM(){if(mO.parentNode)_rm(mO);}
   function o1(){tM();dC(function(text){if(!text.trim())return;let cm=text.split("\n");let i=0;let prog=cP("Comentaris: 0 / "+cm.length);function run(){if(i>=cm.length){sP(prog,"Tots els comentaris processats! ✓");return;}sP(prog,"Comentaris: "+(i+1)+" / "+cm.length);let oB=_q("a[data-ng-click='showCommentsModal()']");if(!oB){_st(run,500);return;}oB.click();let wM=setInterval(function(){let ta=_q("textarea[data-ng-model='comentariGeneral.comentari']");let sC=_q("a[data-ng-click='saveComentariGeneral()']");if(ta&&sC){clearInterval(wM);let c=(cm[i]||"").trim();if(c!==""){ta.value=c;ta.dispatchEvent(new InputEvent("input",{bubbles:true}));sC.click();}_st(function(){let sG=_q("a[data-ng-click='saveNotesAvaluacio()']");if(sG)sG.click();let wS=setInterval(function(){let alerts=_qa(".alert-success");let found=false;alerts.forEach(function(a){if(a.innerText.toLowerCase().includes("desat"))found=true;});if(found){clearInterval(wS);let next=_q("a[data-ng-click=\"canviAlumne('next')\"]");if(!next||next.disabled){sP(prog,"Tots els comentaris processats! ✓");return;}angular.element(next).triggerHandler('click');i++;_st(run,7000);}},500);},2000);}},200);}run();});}
 
-  function o2(){tM();let total=0,mm={},sm={},aP=new Set(),mC={},al=[];let prog=cP("Alumnes: 0");function gS(){return Array.from(_qa("select[data-ng-model='contingut.qualitativa']")).filter(s=>s.offsetParent!==null);}function pr(){let selects=gS();let bt=_q("a.btn.btn-warning[data-ng-click='showCommentsModal()']");if(!bt)return;let alumID=bt.closest("tr")?bt.closest("tr").textContent.trim():total;if(aP.has(alumID))return;aP.add(alumID);let susp=0,matsSusp=[];selects.forEach(sel=>{let tr=sel.closest("tr");let td=tr?tr.querySelector("td[data-ng-if*='matPNomVis']"):null;if(td){let mat=td.textContent.trim();let matID=alumID+"||"+mat;if(!mC[matID]){mC[matID]=true;let nota=sel.value.replace("string:","");if(esSuspes(nota)){mm[mat]=(mm[mat]||0)+1;susp++;matsSusp.push(mat);}else{mm[mat]=mm[mat]||0;}}}});sm[alumID]=susp;al.push({num:total+1,count:susp,mats:matsSusp});total++;sP(prog,"Alumnes: "+total);}function sg(){let next=_q("a[data-ng-click=\"canviAlumne('next')\"]");if(next&&!next.hasAttribute("disabled")){angular.element(next).triggerHandler('click');return true;}return false;}function eE(cb){let lC=0,sT=0;let int=setInterval(()=>{let count=gS().length;let bt=_q("a.btn.btn-warning[data-ng-click='showCommentsModal()']");if(bt&&count===lC&&count>0){sT+=100;if(sT>=500){clearInterval(int);cb();}}else{sT=0;lC=count;}},100);}function acabar(){sP(prog,"Processament complet! ✓");mR(total,mm,sm,al);}function loop(){eE(()=>{pr();if(sg()){_st(loop,150);}else{acabar();}});}loop();}
+  // ── Helpers per llegir notes a tutoria batx amb inputs quantitatius ─────────
+  // Retorna els inputs de nota visibles de la fila actual
+  function gInpQ(){
+    return [...document.querySelectorAll('input[name="quantitativa"]')].filter(el=>el.offsetParent!==null);
+  }
+  // Retorna els selects de nota visibles (ESO / batx amb selects)
+  function gSelQ(){
+    return [...document.querySelectorAll("select[data-ng-model='contingut.qualitativa']")].filter(s=>s.offsetParent!==null);
+  }
+  // Retorna el nom de la matèria associada a un element (input o select) dins la seva fila
+  function getNomMateria(el){
+    const tr=el.closest("tr");
+    const td=tr?tr.querySelector("td[data-ng-if*='matPNomVis']"):null;
+    return td?td.textContent.trim():'';
+  }
+  // Llegeix la nota d'un input/select
+  function getNotaEl(el){
+    if(el.tagName==='SELECT')return el.value.replace("string:","");
+    return el.value?el.value.trim():'';
+  }
 
-  function o3(){tM();dC(function(text){if(!text.trim())return;let cm=text.split("\n");let i=0;let total=0,mm={},sm={},aP=new Set(),mC={},al=[];let prog=cP("Processant: 0 / "+cm.length);function gS(){return Array.from(_qa("select[data-ng-model='contingut.qualitativa']")).filter(s=>s.offsetParent!==null);}function pD(){let selects=gS();let bt=_q("a.btn.btn-warning[data-ng-click='showCommentsModal()']");if(!bt)return;let alumID=bt.closest("tr")?bt.closest("tr").textContent.trim():total;if(aP.has(alumID))return;aP.add(alumID);let susp=0,matsSusp=[];selects.forEach(sel=>{let tr=sel.closest("tr");let td=tr?tr.querySelector("td[data-ng-if*='matPNomVis']"):null;if(td){let mat=td.textContent.trim();let matID=alumID+"||"+mat;if(!mC[matID]){mC[matID]=true;let nota=sel.value.replace("string:","");if(esSuspes(nota)){mm[mat]=(mm[mat]||0)+1;susp++;matsSusp.push(mat);}else{mm[mat]=mm[mat]||0;}}}});sm[alumID]=susp;al.push({num:total+1,count:susp,mats:matsSusp});total++;}function eE(cb){let lC=0,sT=0;let int=setInterval(()=>{let count=gS().length;let bt=_q("a.btn.btn-warning[data-ng-click='showCommentsModal()']");if(bt&&count===lC&&count>0){sT+=100;if(sT>=500){clearInterval(int);cb();}}else{sT=0;lC=count;}},100);}function aA(){sP(prog,"Tot processat! ✓");mR(total,mm,sm,al);}function dP(last){_st(function(){let sG=_q("a[data-ng-click='saveNotesAvaluacio()']");if(sG)sG.click();let wS=setInterval(function(){let alerts=_qa(".alert-success");let found=false;alerts.forEach(function(a){if(a.innerText.toLowerCase().includes("desat"))found=true;});if(found){clearInterval(wS);if(last){aA();return;}let next=_q("a[data-ng-click=\"canviAlumne('next')\"]");if(!next||next.hasAttribute("disabled")){aA();return;}angular.element(next).triggerHandler('click');i++;_st(rC,7000);}},500);},2000);}function eC(last){let c=(cm[i]||"").trim();if(c===""){dP(last);return;}let oB=_q("a[data-ng-click='showCommentsModal()']");if(!oB){_st(()=>eC(last),500);return;}oB.click();let wM=setInterval(function(){let ta=_q("textarea[data-ng-model='comentariGeneral.comentari']");let sC=_q("a[data-ng-click='saveComentariGeneral()']");if(ta&&sC){clearInterval(wM);ta.value=c;ta.dispatchEvent(new InputEvent("input",{bubbles:true}));sC.click();dP(last);}},200);}function rC(){sP(prog,"Processant: "+(i+1)+" / "+cm.length);eE(()=>{pD();let next=_q("a[data-ng-click=\"canviAlumne('next')\"]");let isLast=!next||next.hasAttribute("disabled");eC(isLast);});}rC();});}
+  function o2(){tM();let total=0,mm={},sm={},aP=new Set(),mC={},al=[];let prog=cP("Alumnes: 0");
+
+  // Funció polimòrfica: retorna els elements de nota de la fila actual
+  function gElements(){
+    if(batxAmbInputs) return gInpQ();
+    return gSelQ();
+  }
+  // Necessitem un element ancla per detectar quin alumne és actiu
+  // Per batxAmbInputs: usem el primer input quantitatiu visible
+  function getAnclaBtn(){
+    return _q("a.btn.btn-warning[data-ng-click='showCommentsModal()']");
+  }
+
+  function pr(){
+    let els=gElements();
+    let bt=getAnclaBtn();
+    if(!bt&&!batxAmbInputs)return;
+    // ID de l'alumne: si hi ha botó el traiem de la seva fila, si no usem total
+    let alumID;
+    if(bt){alumID=bt.closest("tr")?bt.closest("tr").textContent.trim():total;}
+    else{alumID='alumne_'+total;}
+    if(aP.has(alumID))return;
+    aP.add(alumID);
+    let susp=0,matsSusp=[];
+    els.forEach(el=>{
+      const mat=getNomMateria(el);
+      const matID=alumID+"||"+mat;
+      if(!mC[matID]){
+        mC[matID]=true;
+        const nota=getNotaEl(el);
+        if(nota!==''){
+          if(esSuspes(nota)){mm[mat]=(mm[mat]||0)+1;susp++;matsSusp.push(mat);}
+          else{mm[mat]=mm[mat]||0;}
+        }
+      }
+    });
+    sm[alumID]=susp;al.push({num:total+1,count:susp,mats:matsSusp});total++;sP(prog,"Alumnes: "+total);}
+
+  function sg(){let next=_q("a[data-ng-click=\"canviAlumne('next')\"]");if(next&&!next.hasAttribute("disabled")){angular.element(next).triggerHandler('click');return true;}return false;}
+
+  function eE(cb){
+    let lC=0,sT=0;
+    let int=setInterval(()=>{
+      let count=gElements().length;
+      // Per batxAmbInputs no necessitem el botó per considerar que ha carregat
+      let bt=batxAmbInputs?true:_q("a.btn.btn-warning[data-ng-click='showCommentsModal()']");
+      if(bt&&count===lC&&count>0){sT+=100;if(sT>=500){clearInterval(int);cb();}}
+      else{sT=0;lC=count;}
+    },100);}
+
+  function acabar(){sP(prog,"Processament complet! ✓");mR(total,mm,sm,al);}
+  function loop(){eE(()=>{pr();if(sg()){_st(loop,150);}else{acabar();}});}loop();}
+
+  function o3(){tM();dC(function(text){if(!text.trim())return;let cm=text.split("\n");let i=0;let total=0,mm={},sm={},aP=new Set(),mC={},al=[];let prog=cP("Processant: 0 / "+cm.length);
+
+  function gElements(){
+    if(batxAmbInputs) return gInpQ();
+    return gSelQ();
+  }
+  function getAnclaBtn(){return _q("a.btn.btn-warning[data-ng-click='showCommentsModal()']");}
+
+  function pD(){
+    let els=gElements();
+    let bt=getAnclaBtn();
+    let alumID;
+    if(bt){alumID=bt.closest("tr")?bt.closest("tr").textContent.trim():total;}
+    else{alumID='alumne_'+total;}
+    if(aP.has(alumID))return;
+    aP.add(alumID);
+    let susp=0,matsSusp=[];
+    els.forEach(el=>{
+      const mat=getNomMateria(el);
+      const matID=alumID+"||"+mat;
+      if(!mC[matID]){
+        mC[matID]=true;
+        const nota=getNotaEl(el);
+        if(nota!==''){
+          if(esSuspes(nota)){mm[mat]=(mm[mat]||0)+1;susp++;matsSusp.push(mat);}
+          else{mm[mat]=mm[mat]||0;}
+        }
+      }
+    });
+    sm[alumID]=susp;al.push({num:total+1,count:susp,mats:matsSusp});total++;}
+
+  function eE(cb){
+    let lC=0,sT=0;
+    let int=setInterval(()=>{
+      let count=gElements().length;
+      let bt=batxAmbInputs?true:_q("a.btn.btn-warning[data-ng-click='showCommentsModal()']");
+      if(bt&&count===lC&&count>0){sT+=100;if(sT>=500){clearInterval(int);cb();}}
+      else{sT=0;lC=count;}
+    },100);}
+
+  function aA(){sP(prog,"Tot processat! ✓");mR(total,mm,sm,al);}
+  function dP(last){_st(function(){let sG=_q("a[data-ng-click='saveNotesAvaluacio()']");if(sG)sG.click();let wS=setInterval(function(){let alerts=_qa(".alert-success");let found=false;alerts.forEach(function(a){if(a.innerText.toLowerCase().includes("desat"))found=true;});if(found){clearInterval(wS);if(last){aA();return;}let next=_q("a[data-ng-click=\"canviAlumne('next')\"]");if(!next||next.hasAttribute("disabled")){aA();return;}angular.element(next).triggerHandler('click');i++;_st(rC,7000);}},500);},2000);}
+  function eC(last){let c=(cm[i]||"").trim();if(c===""){dP(last);return;}let oB=_q("a[data-ng-click='showCommentsModal()']");if(!oB){_st(()=>eC(last),500);return;}oB.click();let wM=setInterval(function(){let ta=_q("textarea[data-ng-model='comentariGeneral.comentari']");let sC=_q("a[data-ng-click='saveComentariGeneral()']");if(ta&&sC){clearInterval(wM);ta.value=c;ta.dispatchEvent(new InputEvent("input",{bubbles:true}));sC.click();dP(last);}},200);}
+  function rC(){sP(prog,"Processant: "+(i+1)+" / "+cm.length);eE(()=>{pD();let next=_q("a[data-ng-click=\"canviAlumne('next')\"]");let isLast=!next||next.hasAttribute("disabled");eC(isLast);});}rC();});}
 
   function bindTutoriaButtons(){
     let b1=_id("btn1");
