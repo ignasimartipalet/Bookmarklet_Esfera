@@ -12,7 +12,20 @@ var _st=(...a)=>setTimeout(...a);
 
 var isA=!!_q("select[data-ng-model='contingut.qualitativa']");
 var isM=!!_q('#my-tab-content');
-var isBATX=!!_q('table[data-st-table="dummyStudents"]');
+
+// FIX 1: isBATX ara comprova que la taula existeixi I que el breadcrumb indiqui batxillerat.
+// Les finals d'ESO també tenen 'table[data-st-table="dummyStudents"]', però el breadcrumb
+// dels seus hrefs conté 'finalAvaluacioGrupMateria' sense cap referència a 'batx'/'bat'.
+var isBATX=(function(){
+  if(!_q('table[data-st-table="dummyStudents"]'))return false;
+  var links=_qa('ol.breadcrumb a');
+  for(var i=0;i<links.length;i++){
+    var href=(links[i].getAttribute('href')||'').toLowerCase();
+    var txt=(links[i].textContent||'').toLowerCase();
+    if(href.includes('batx')||txt.includes('batx')||txt.includes('bat '))return true;
+  }
+  return false;
+})();
 
 // ── TUTORIA (isA) ─────────────────────────────────────────────────────────────
 if(isA){
@@ -24,10 +37,6 @@ if(isA){
   document.head.ap(styleEl);
   const F="font-family:'Outfit',system-ui,sans-serif;box-sizing:border-box;";
 
-  // Detecta si la pàgina de tutoria és de batxillerat:
-  // 1) selects amb valors numèrics
-  // 2) inputs[name="quantitativa"] visibles (batx finals)
-  // 3) inputs[name="qualitativa"][type="number"] visibles (batx parcials)
   function detectarBatxTutoria(){
     const primerSelect=_q("select[data-ng-model='contingut.qualitativa']");
     if(primerSelect&&Array.from(primerSelect.options).some(o=>{
@@ -40,7 +49,6 @@ if(isA){
   }
   const esBatxTutoria=detectarBatxTutoria();
 
-  // batxAmbInputs: true si les notes són en inputs (finals=quantitativa, parcials=qualitativa type=number)
   function usaInputsQuantitatius(){
     if([...document.querySelectorAll('input[name="quantitativa"]')].filter(el=>el.offsetParent!==null).length>0)return true;
     if([...document.querySelectorAll('input[name="qualitativa"][type="number"]')].filter(el=>el.offsetParent!==null).length>0)return true;
@@ -86,24 +94,19 @@ if(isA){
   function tM(){if(mO.parentNode)_rm(mO);}
   function o1(){tM();dC(function(text){if(!text.trim())return;let cm=text.split("\n");let i=0;let prog=cP("Comentaris: 0 / "+cm.length);function run(){if(i>=cm.length){sP(prog,"Tots els comentaris processats! ✓");return;}sP(prog,"Comentaris: "+(i+1)+" / "+cm.length);let oB=_q("a[data-ng-click='showCommentsModal()']");if(!oB){_st(run,500);return;}oB.click();let wM=setInterval(function(){let ta=_q("textarea[data-ng-model='comentariGeneral.comentari']");let sC=_q("a[data-ng-click='saveComentariGeneral()']");if(ta&&sC){clearInterval(wM);let c=(cm[i]||"").trim();if(c!==""){ta.value=c;ta.dispatchEvent(new InputEvent("input",{bubbles:true}));sC.click();}_st(function(){let sG=_q("a[data-ng-click='saveNotesAvaluacio()']");if(sG)sG.click();let wS=setInterval(function(){let alerts=_qa(".alert-success");let found=false;alerts.forEach(function(a){if(a.innerText.toLowerCase().includes("desat"))found=true;});if(found){clearInterval(wS);let next=_q("a[data-ng-click=\"canviAlumne('next')\"]");if(!next||next.disabled){sP(prog,"Tots els comentaris processats! ✓");return;}angular.element(next).triggerHandler('click');i++;_st(run,7000);}},500);},2000);}},200);}run();});}
 
-  // ── Helpers per llegir notes a tutoria batx amb inputs quantitatius ─────────
-  // Retorna els inputs de nota visibles de la fila actual
   function gInpQ(){
     const q=[...document.querySelectorAll('input[name="quantitativa"]')].filter(el=>el.offsetParent!==null);
     if(q.length>0)return q;
     return [...document.querySelectorAll('input[name="qualitativa"][type="number"]')].filter(el=>el.offsetParent!==null);
   }
-  // Retorna els selects de nota visibles (ESO / batx amb selects)
   function gSelQ(){
     return [...document.querySelectorAll("select[data-ng-model='contingut.qualitativa']")].filter(s=>s.offsetParent!==null);
   }
-  // Retorna el nom de la matèria associada a un element (input o select) dins la seva fila
   function getNomMateria(el){
     const tr=el.closest("tr");
     const td=tr?tr.querySelector("td[data-ng-if*='matPNomVis']"):null;
     return td?td.textContent.trim():'';
   }
-  // Llegeix la nota d'un input/select
   function getNotaEl(el){
     if(el.tagName==='SELECT')return el.value.replace("string:","");
     return el.value?el.value.trim():'';
@@ -136,7 +139,6 @@ if(isA){
     let lC=0,sT=0;
     let int=setInterval(()=>{
       let count=gElements().length;
-      // Per batxAmbInputs no necessitem el botó per considerar que ha carregat
       let bt=batxAmbInputs?true:_q("a.btn.btn-warning[data-ng-click='showCommentsModal()']");
       if(bt&&count===lC&&count>0){sT+=100;if(sT>=500){clearInterval(int);cb();}}
       else{sT=0;lC=count;}
@@ -300,8 +302,7 @@ if(isA){
     const ok=_c('button');ok.textContent='Tancar';ok.style.cssText='width:100%;padding:11px;border:none;border-radius:8px;background:#555;color:#fff;font-size:14px;font-weight:500;cursor:pointer;';ok.onclick=close;md.ap(ok);
   }
   function sF(mode,idx2,wM){
-    md.innerHTML='';md.ap(mkCtx());
-    md.ap(mkBack(()=>idx2===null?sSc(mode,wM):sPk(mode,wM)));
+    md.innerHTML='';md.ap(mkCtx());md.ap(mkBack(()=>idx2===null?sSc(mode,wM):sPk(mode,wM)));
     let nTA=null,cTA=null;
     if(mode==='notes'||mode==='ambdos'){md.ap(mkLbl('Notes (una per línia, en el mateix ordre que la taula)'));nTA=mkTA('10\n7\n5\n...');md.ap(nTA);}
     if(mode==='comentaris'||mode==='ambdos'){md.ap(mkLbl('Comentaris (un per línia)'));cTA=mkTA('Comentari alumne 1\nComentari alumne 2\n...');md.ap(cTA);}
@@ -398,7 +399,14 @@ if(isA){
     const q=row.querySelector('input[name="qualitativa"]');
     return q&&(q.value.trim()!==''||q.classList.contains('ng-not-empty'));
   }
-  function rCm(row){const btn=row.querySelector('a.glyphicon.glyphicon-new-window');if(!btn)return false;const td=btn.closest('td');if(!td)return false;if(td.querySelector('.badge,.label,span[class*="comment"],span[class*="count"]'))return true;const txt=Array.from(td.childNodes).filter(n=>n.nodeType===3).map(n=>n.textContent.trim()).join('');if(/\d+/.test(txt))return true;if(btn.classList.length>2)return true;if(btn.getAttribute('title')||btn.getAttribute('data-original-title'))return true;return false;}
+
+  // FIX 2: rCm ara detecta comentaris igual que hasComment a isBATX:
+  // el botó té 'emptyIcon' quan NO hi ha comentari, i NO la té quan SÍ n'hi ha.
+  function rCm(row){
+    const btn=row.querySelector('a.glyphicon.glyphicon-new-window');
+    return btn&&!btn.classList.contains('emptyIcon');
+  }
+
   function hN(){return gR().some(rN);}
   function hC(){return gR().some(rCm);}
 
@@ -451,8 +459,8 @@ if(isA){
       if(!btn){next(i+1);return;}
       btn.click();
       _st(()=>{
-        const ta=_q('textarea[data-ng-model="vm.commentsToModify.commentsToModifyModal"]')||_q('textarea.form-control');
-        const save=_q('a[data-ng-click="vm.modalSave()"]');
+        const ta=_q('textarea[data-ng-model="vm.commentsToModify.commentsToModifyModal"]')||_q('textarea[data-ng-model="commentsToModify.commentsToModifyModal"]')||_q('textarea.form-control');
+        const save=_q('a[data-ng-click="vm.modalSave()"]')||_q('a[data-ng-click="modalSave()"]');
         if(!ta||!save){next(i+1);return;}
         ta.focus();ta.value=cm[i];
         ta.dispatchEvent(new Event('input',{bubbles:true}));
