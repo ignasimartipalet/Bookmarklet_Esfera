@@ -14,8 +14,6 @@ var isA=!!_q("select[data-ng-model='contingut.qualitativa']");
 var isM=!!_q('#my-tab-content');
 
 // FIX 1: isBATX ara comprova que la taula existeixi I que el breadcrumb indiqui batxillerat.
-// Les finals d'ESO també tenen 'table[data-st-table="dummyStudents"]', però el breadcrumb
-// dels seus hrefs conté 'finalAvaluacioGrupMateria' sense cap referència a 'batx'/'bat'.
 var isBATX=(function(){
   if(!_q('table[data-st-table="dummyStudents"]'))return false;
   var links=_qa('ol.breadcrumb a');
@@ -25,6 +23,12 @@ var isBATX=(function(){
     if(href.includes('batx')||txt.includes('batx')||txt.includes('bat '))return true;
   }
   return false;
+})();
+
+// ── DETECCIÓ PÀGINA COMENTARIS/CONSELL (isLIT) ────────────────────────────────
+var isLIT=(function(){
+  var url=window.location.href;
+  return url.includes('RES_P_COM_GENERAL_LIT')||url.includes('RES_P_CONSELL_LIT');
 })();
 
 // ── TUTORIA (isA) ─────────────────────────────────────────────────────────────
@@ -193,6 +197,119 @@ if(isA){
     if(bx)bx.onclick=tM;
   }
   _st(bindTutoriaButtons,100);
+
+// ── COMENTARIS / CONSELL ORIENTADOR (isLIT) ───────────────────────────────────
+}else if(isLIT){
+  let fontLink=_c('link');fontLink.rel='stylesheet';
+  fontLink.href='https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap';
+  document.head.ap(fontLink);
+  let styleEl=_c('style');
+  styleEl.textContent='@keyframes tutorFadeIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}@keyframes tutorPulse{0%,100%{opacity:1}50%{opacity:0.3}}';
+  document.head.ap(styleEl);
+  const F="font-family:'Outfit',system-ui,sans-serif;box-sizing:border-box;";
+
+  const url=window.location.href;
+  const esGeneral=url.includes('RES_P_COM_GENERAL_LIT');
+  const titol=esGeneral?'Comentaris de tutor':'Consell orientador';
+  const emoji=esGeneral?'💬':'🧭';
+
+  // Recull totes les textareas rellevants (parelles: posicions parells=consell, imparells=general)
+  const textareasTots=Array.from(document.querySelectorAll('textarea')).filter((_,i)=>esGeneral?i%2===1:i%2===0);
+  const ambContingut=textareasTots.filter(ta=>ta.value.trim()!=='').length;
+
+  function cO(html,tancarFn){
+    let ov=_c('div');
+    ov.style.cssText='position:fixed;inset:0;background:rgba(10,10,20,0.5);backdrop-filter:blur(6px);z-index:999999;display:flex;align-items:center;justify-content:center';
+    let box=_c('div');
+    box.style.cssText=F+'background:#fff;border-radius:20px;padding:36px;min-width:360px;max-width:min(92vw,520px);box-shadow:0 32px 80px rgba(0,0,0,0.18),0 2px 8px rgba(0,0,0,0.06);animation:tutorFadeIn 0.22s ease';
+    box.innerHTML=html;
+    ov.ap(box);
+    _ba(ov);
+    if(tancarFn)ov.addEventListener('click',e=>{if(e.target===ov)tancarFn(ov);});
+    return ov;
+  }
+
+  // Avís si ja hi ha contingut
+  const avisHTML=ambContingut>0
+    ?'<div style="'+F+'background:#fff8e1;border:1.5px solid #f5a623;border-radius:12px;padding:12px 16px;margin-bottom:20px;display:flex;gap:10px;align-items:flex-start">'
+      +'<span style="font-size:16px;line-height:1.4">⚠️</span>'
+      +'<span style="font-size:13px;color:#7a5c00;line-height:1.5">'+ambContingut+' alumne'+(ambContingut>1?'s ja tenen':'ja té')+' comentari. Si continues, es sobreescriurà.</span>'
+      +'</div>'
+    :'';
+
+  // Comptador en viu
+  const html=''
+    +'<div style="'+F+'">'
+    +'<div style="text-align:center;margin-bottom:24px">'
+    +'<div style="width:52px;height:52px;background:#0f0f1a;border-radius:16px;display:inline-flex;align-items:center;justify-content:center;font-size:26px;margin-bottom:14px">'+emoji+'</div>'
+    +'<h2 style="'+F+'margin:0 0 4px;font-size:21px;font-weight:700;color:#0f0f1a">'+titol+'</h2>'
+    +'<p style="'+F+'margin:0;font-size:13px;color:#9ca3af">Enganxa els textos (un per alumne)</p>'
+    +'</div>'
+    +avisHTML
+    +'<textarea id="litTA" placeholder="Text alumne 1&#10;Text alumne 2&#10;Text alumne 3&#10;..." style="'+F+'width:100%;height:160px;border:1.5px solid #e5e7eb;border-radius:12px;padding:14px;font-size:13px;color:#0f0f1a;resize:vertical;outline:none;line-height:1.6;margin-bottom:8px"></textarea>'
+    +'<div id="litInfo" style="'+F+'font-size:12px;color:#9ca3af;min-height:18px;margin-bottom:16px"></div>'
+    +'<div style="display:flex;gap:10px">'
+    +'<button id="litCancel" style="'+F+'flex:1;padding:13px;font-size:14px;font-weight:600;border:1.5px solid #e5e7eb;border-radius:12px;background:transparent;color:#9ca3af;cursor:pointer">Cancel·lar</button>'
+    +'<button id="litOk" style="'+F+'flex:2;padding:13px;font-size:14px;font-weight:600;border:none;border-radius:12px;background:#0f0f1a;color:#fff;cursor:pointer">Aplicar '+titol.toLowerCase()+' →</button>'
+    +'</div>'
+    +'<p style="font-size:11px;color:#9ca3af;text-align:center;margin-top:18px;margin-bottom:0">© 2026 Ignasi Martí Palet</p>'
+    +'</div>';
+
+  const ov=cO(html,o=>_rm(o));
+
+  _st(()=>{
+    const ta=_id('litTA');
+    const info=_id('litInfo');
+    const ok=_id('litOk');
+    const cancel=_id('litCancel');
+
+    if(ta)ta.focus();
+
+    if(ta&&info){
+      ta.addEventListener('input',()=>{
+        const n=ta.value.trim().split('\n').filter(l=>l.trim()!=='').length;
+        info.textContent=n>0?n+' comentari'+(n>1?'s':'')+' detectat'+(n>1?'s':''):'';
+      });
+    }
+
+    if(cancel)cancel.onclick=()=>{if(ov.parentNode)_rm(ov);};
+
+    if(ok)ok.onclick=()=>{
+      if(!ta)return;
+      const comentaris=ta.value.trim().split('\n').map(c=>c.trim()).filter(c=>c!=='');
+      if(!comentaris.length){
+        info.style.color='#dc2626';
+        info.textContent='⚠️ Enganxa almenys un comentari';
+        return;
+      }
+      // Si hi havia contingut previ, confirmació visual ja mostrada a l'avís — procedim directament
+      const textareas=Array.from(document.querySelectorAll('textarea')).filter((_,i)=>esGeneral?i%2===1:i%2===0);
+      const n=Math.min(comentaris.length,textareas.length);
+      for(let i=0;i<n;i++){
+        const taEl=textareas[i];
+        const scope=angular.element(taEl).scope();
+        const model=taEl.getAttribute('data-ng-model')||taEl.getAttribute('ng-model');
+        if(scope&&model){
+          const parts=model.split('.');
+          let obj=scope;
+          for(let j=0;j<parts.length-1;j++)obj=obj[parts[j]];
+          obj[parts[parts.length-1]]=comentaris[i];
+          scope.$apply();
+        }else{
+          taEl.value=comentaris[i];
+          taEl.dispatchEvent(new Event('input',{bubbles:true}));
+          taEl.dispatchEvent(new Event('change',{bubbles:true}));
+        }
+      }
+      if(ov.parentNode)_rm(ov);
+      // Confirmació: pill al cantó superior
+      const pill=_c('div');
+      pill.style.cssText=F+'position:fixed;top:20px;right:20px;padding:12px 20px;background:#0f0f1a;color:#fff;font-size:13px;font-weight:500;border-radius:100px;z-index:999998;box-shadow:0 8px 28px rgba(0,0,0,0.22);display:flex;align-items:center;gap:10px';
+      pill.innerHTML='<span style="width:8px;height:8px;border-radius:50%;background:#4ade80;display:inline-block"></span><span>'+n+' alumnes actualitzats ✓</span>';
+      _ba(pill);
+      _st(()=>{if(pill.parentNode)_rm(pill);},3000);
+    };
+  },100);
 
 // ── AVALUACIONS FINALS BATXILLERAT (isBATX) — comprovat ABANS que isM ─────────
 }else if(isBATX){
@@ -400,8 +517,6 @@ if(isA){
     return q&&(q.value.trim()!==''||q.classList.contains('ng-not-empty'));
   }
 
-  // FIX 2: rCm ara detecta comentaris igual que hasComment a isBATX:
-  // el botó té 'emptyIcon' quan NO hi ha comentari, i NO la té quan SÍ n'hi ha.
   function rCm(row){
     const btn=row.querySelector('a.glyphicon.glyphicon-new-window');
     return btn&&!btn.classList.contains('emptyIcon');
@@ -409,6 +524,17 @@ if(isA){
 
   function hN(){return gR().some(rN);}
   function hC(){return gR().some(rCm);}
+
+  // Normalitza textos llargs de qualificació ESO a la sigla que espera el select
+  function nrmESO(v){
+    const s=v.trim().toLowerCase()
+      .normalize('NFD').replace(/[\u0300-\u036f]/g,''); // treu accents per comparar
+    if(s==='na'||s==='no assolit'||s==='no assoliment')return 'NA';
+    if(s==='as'||s==='satisfactori'||s==='assoliment satisfactori')return 'AS';
+    if(s==='an'||s==='notable'||s==='assoliment notable')return 'AN';
+    if(s==='ae'||s==='excel·lent'||s==='excellent'||s==='assoliment excel·lent'||s==='assoliment excellent')return 'AE';
+    return v.trim(); // si no coincideix, retorna el valor original (p.ex. números per a batx)
+  }
 
   function aN(text,idx2,wM){
     const grades=text.split('\n').map(s=>s.split('\t'));
@@ -421,7 +547,7 @@ if(isA){
       for(let i=0;i<grades.length&&i<tgInps.length;i++){
         const inp=tgInps[i];if(!inp)continue;
         if(wM==='skip'&&tg[i]&&rN(tg[i])){sk.push(gN(tg[i]));continue;}
-        const v=(grades[i][0]||'').trim();if(v==='')continue;
+        const v=nrmESO(grades[i][0]||'');if(v==='')continue;
         upd.push({inp,v});
       }
       upd.forEach(({inp,v})=>inp.value=v);
@@ -437,9 +563,10 @@ if(isA){
       const sg=grades[i];
       for(let j=0;j<sg.length;j++){
         if(sg[j]!==''){
+          const val=nrmESO(sg[j]);
           const sel=row.querySelector(`td:nth-child(${6+j})>div>div>select`);
-          if(sel){sel.value='string:'+sg[j].trim();sel.dispatchEvent(new Event('change'));}
-          else{const inp=row.querySelector(`td:nth-child(${6+j}) input[type="text"]`)||row.querySelector(`td:nth-child(${6+j}) input[type="number"]`)||row.querySelector(`td:nth-child(${6+j}) input`);if(inp){inp.value=sg[j].trim();inp.dispatchEvent(new Event('input',{bubbles:true}));inp.dispatchEvent(new Event('change',{bubbles:true}));}}
+          if(sel){sel.value='string:'+val;sel.dispatchEvent(new Event('change'));}
+          else{const inp=row.querySelector(`td:nth-child(${6+j}) input[type="text"]`)||row.querySelector(`td:nth-child(${6+j}) input[type="number"]`)||row.querySelector(`td:nth-child(${6+j}) input`);if(inp){inp.value=val;inp.dispatchEvent(new Event('input',{bubbles:true}));inp.dispatchEvent(new Event('change',{bubbles:true}));}}
         }
       }
     }
@@ -489,6 +616,6 @@ if(isA){
   sCh();ov.ap(md);_ba(ov);
 
 }else{
-  alert('⚠️ Aquest bookmarklet només funciona a:\n• Qualificacions per grup i matèria\n• Qualificacions per grup i alumne/a\n• Avaluacions finals de batxillerat');
+  alert('⚠️ Aquest bookmarklet només funciona a:\n• Qualificacions per grup i matèria\n• Qualificacions per grup i alumne/a\n• Avaluacions finals de batxillerat\n• Comentaris de tutor / Consell orientador');
 }
 })();
