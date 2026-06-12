@@ -93,9 +93,22 @@ if(isA){
   function dC(callback){let html='<div style="'+F+'text-align:center"><div style="width:52px;height:52px;background:#0f0f1a;border-radius:16px;display:inline-flex;align-items:center;justify-content:center;font-size:26px;margin-bottom:16px">💬</div><h2 style="'+F+'margin:0 0 6px;font-size:21px;font-weight:700;color:#0f0f1a">Comentaris</h2><p style="'+F+'margin:0 0 20px;font-size:13px;color:#9ca3af">Enganxa els comentaris (un per alumne)</p><textarea id="tutorTA" placeholder="Comentari alumne 1&#10;Comentari alumne 2&#10;Comentari alumne 3&#10;..." style="'+F+'width:100%;height:160px;border:1.5px solid #e5e7eb;border-radius:12px;padding:14px;font-size:13px;color:#0f0f1a;resize:vertical;outline:none;line-height:1.6"></textarea><div style="display:flex;gap:10px;margin-top:16px"><button id="btnCancelCom" style="'+F+'flex:1;padding:13px;font-size:14px;font-weight:600;border:1.5px solid #e5e7eb;border-radius:12px;background:transparent;color:#9ca3af;cursor:pointer">Cancel·lar</button><button id="btnOkCom" style="'+F+'flex:2;padding:13px;font-size:14px;font-weight:600;border:none;border-radius:12px;background:#0f0f1a;color:#fff;cursor:pointer">Continuar →</button></div></div>';
   let ov=cO(html,null);_st(()=>{let ta=_id('tutorTA');if(ta)ta.focus();let ok=_id('btnOkCom');if(ok)ok.onclick=()=>{let val=ta?ta.value:'';if(ov.parentNode)_rm(ov);callback(val);};let ca=_id('btnCancelCom');if(ca)ca.onclick=()=>{if(ov.parentNode)_rm(ov);};},100);}
 
-  let mH='<div style="'+F+'text-align:center"><div style="width:52px;height:52px;background:#0f0f1a;border-radius:16px;display:inline-flex;align-items:center;justify-content:center;font-size:26px;margin-bottom:16px">🎓</div><h2 style="'+F+'margin:0 0 6px;font-size:21px;font-weight:700;color:#0f0f1a">Eina de Tutoria'+(batxAmbInputs?' (batxillerat)':'')+'</h2><p style="'+F+'margin:0 0 28px;font-size:13px;color:#9ca3af">Selecciona l\'acció que vols executar</p><div style="display:flex;flex-direction:column;gap:10px"><button id="btn1" style="'+F+'padding:14px 20px;font-size:14px;font-weight:600;border:none;border-radius:12px;background:#0f0f1a;color:#fff;cursor:pointer;display:flex;align-items:center;gap:12px">💬<span>Comentaris de tutor</span></button><button id="btn2" style="'+F+'padding:14px 20px;font-size:14px;font-weight:600;border:none;border-radius:12px;background:#0f0f1a;color:#fff;cursor:pointer;display:flex;align-items:center;gap:12px">📋<span>Acta de tutoria</span></button><button id="btn3" style="'+F+'padding:14px 20px;font-size:14px;font-weight:600;border:2px solid #0f0f1a;border-radius:12px;background:#fff;color:#0f0f1a;cursor:pointer;display:flex;align-items:center;gap:12px">⚡<span>Les dues a la vegada</span></button><button id="btnX" style="'+F+'padding:10px 20px;font-size:13px;font-weight:500;border:1.5px solid #e5e7eb;border-radius:12px;background:transparent;color:#9ca3af;cursor:pointer;margin-top:2px">Cancel·lar</button><p style="font-size:11px;color:#9ca3af;text-align:center;margin-top:14px;margin-bottom:0">© 2026 Ignasi Martí Palet</p><div></div>';
+  let mH='<div style="'+F+'text-align:center"><div style="width:52px;height:52px;background:#0f0f1a;border-radius:16px;display:inline-flex;align-items:center;justify-content:center;font-size:26px;margin-bottom:16px">🎓</div><h2 style="'+F+'margin:0 0 6px;font-size:21px;font-weight:700;color:#0f0f1a">Eina de Tutoria'+(batxAmbInputs?' (batxillerat)':'')+'</h2><p style="'+F+'margin:0 0 28px;font-size:13px;color:#9ca3af">Selecciona l\'acció que vols executar</p><div style="display:flex;flex-direction:column;gap:10px"><button id="btn1" style="'+F+'padding:14px 20px;font-size:14px;font-weight:600;border:none;border-radius:12px;background:#0f0f1a;color:#fff;cursor:pointer;display:flex;align-items:center;gap:12px">💬<span>Comentaris de tutor</span></button><button id="btn2" style="'+F+'padding:14px 20px;font-size:14px;font-weight:600;border:none;border-radius:12px;background:#0f0f1a;color:#fff;cursor:pointer;display:flex;align-items:center;gap:12px">📋<span>Acta de tutoria</span></button><button id="btn3" style="'+F+'padding:14px 20px;font-size:14px;font-weight:600;border:2px solid #0f0f1a;border-radius:12px;background:#fff;color:#0f0f1a;cursor:pointer;display:flex;align-items:center;gap:12px">⚡<span>Les dues a la vegada</span></button><button id="btnInfo" style="'+F+'padding:10px 20px;font-size:13px;font-weight:500;border:1.5px solid #e5e7eb;border-radius:12px;background:transparent;color:#6b7280;cursor:pointer;margin-top:2px">ℹ️ Com funciona</button><button id="btnX" style="'+F+'padding:10px 20px;font-size:13px;font-weight:500;border:1.5px solid #e5e7eb;border-radius:12px;background:transparent;color:#9ca3af;cursor:pointer;margin-top:2px">Cancel·lar</button><p style="font-size:11px;color:#9ca3af;text-align:center;margin-top:14px;margin-bottom:0">© 2026 Ignasi Martí Palet</p><div></div>';
   let mO=cO(mH,o=>_rm(o));
   function tM(){if(mO.parentNode)_rm(mO);}
+
+  function sInfoA(){
+    const box=mO.firstElementChild;
+    if(!box)return;
+    const sec=(tit,items)=>'<div style="'+F+'margin-bottom:16px"><p style="'+F+'font-size:11px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:0.08em;margin:0 0 8px">'+tit+'</p><div style="border-radius:10px;overflow:hidden;border:1px solid #f0f0f0">'+items.map((it,i)=>'<div style="'+F+'padding:9px 14px;font-size:13px;color:#374151;line-height:1.5'+(i>0?';border-top:1px solid #f3f4f6':'')+'">'+it+'</div>').join('')+'</div></div>';
+    box.innerHTML='<div style="'+F+'max-height:70vh;overflow-y:auto">'
+      +'<button id="btnInfoBack" style="'+F+'background:none;border:none;color:#6b7280;font-size:13px;cursor:pointer;padding:0;margin-bottom:16px;display:block">← Tornar</button>'
+      +'<h2 style="'+F+'margin:0 0 18px;font-size:18px;font-weight:700;color:#0f0f1a">ℹ️ Com funciona</h2>'
+      +sec('Comentaris de tutor',['💬 Enganxa un comentari per alumne, <strong>un per línia</strong>, en el mateix ordre que apareixen a la pantalla.','↵ Cada comentari ha d\'ocupar exactament una sola línia, <strong>sense salts de línia interns</strong>.','⬜ Per saltar-te un alumne, deixa la línia corresponent en <strong>blanc</strong>.'])
+      +sec('Acta de tutoria',['📋 Recorre tots els alumnes automàticament i genera un resum de suspesos per matèria i per alumne.','▶️ No cal enganxar res: simplement prem el botó i espera que acabi.'])
+      +'</div>';
+    _st(()=>{const b=_id('btnInfoBack');if(b)b.onclick=()=>{box.innerHTML=mH;_st(bindTutoriaButtons,50);};},50);
+  }
   function o1(){tM();dC(function(text){if(!text.trim())return;let cm=text.split("\n");let i=0;let prog=cP("Comentaris: 0 / "+cm.length);function run(){if(i>=cm.length){sP(prog,"Tots els comentaris processats! ✓");return;}sP(prog,"Comentaris: "+(i+1)+" / "+cm.length);let oB=_q("a[data-ng-click='showCommentsModal()']");if(!oB){_st(run,500);return;}oB.click();let wM=setInterval(function(){let ta=_q("textarea[data-ng-model='comentariGeneral.comentari']");let sC=_q("a[data-ng-click='saveComentariGeneral()']");if(ta&&sC){clearInterval(wM);let c=(cm[i]||"").trim();if(c!==""){ta.value=c;ta.dispatchEvent(new InputEvent("input",{bubbles:true}));sC.click();}_st(function(){let sG=_q("a[data-ng-click='saveNotesAvaluacio()']");if(sG)sG.click();let wS=setInterval(function(){let alerts=_qa(".alert-success");let found=false;alerts.forEach(function(a){if(a.innerText.toLowerCase().includes("desat"))found=true;});if(found){clearInterval(wS);let next=_q("a[data-ng-click=\"canviAlumne('next')\"]");if(!next||next.disabled){sP(prog,"Tots els comentaris processats! ✓");return;}angular.element(next).triggerHandler('click');i++;_st(run,7000);}},500);},2000);}},200);}run();});}
 
   function gInpQ(){
@@ -190,10 +203,12 @@ if(isA){
     let b1=_id("btn1");
     let b2=_id("btn2");
     let b3=_id("btn3");
+    let bi=_id("btnInfo");
     let bx=_id("btnX");
     if(b1)b1.onclick=o1;
     if(b2)b2.onclick=o2;
     if(b3)b3.onclick=o3;
+    if(bi)bi.onclick=sInfoA;
     if(bx)bx.onclick=tM;
   }
   _st(bindTutoriaButtons,100);
@@ -238,7 +253,7 @@ if(isA){
     :'';
 
   // Comptador en viu
-  const html=''
+  const litMainHTML=''
     +'<div style="'+F+'">'
     +'<div style="text-align:center;margin-bottom:24px">'
     +'<div style="width:52px;height:52px;background:#0f0f1a;border-radius:16px;display:inline-flex;align-items:center;justify-content:center;font-size:26px;margin-bottom:14px">'+emoji+'</div>'
@@ -252,16 +267,30 @@ if(isA){
     +'<button id="litCancel" style="'+F+'flex:1;padding:13px;font-size:14px;font-weight:600;border:1.5px solid #e5e7eb;border-radius:12px;background:transparent;color:#9ca3af;cursor:pointer">Cancel·lar</button>'
     +'<button id="litOk" style="'+F+'flex:2;padding:13px;font-size:14px;font-weight:600;border:none;border-radius:12px;background:#0f0f1a;color:#fff;cursor:pointer">Aplicar '+titol.toLowerCase()+' →</button>'
     +'</div>'
-    +'<p style="font-size:11px;color:#9ca3af;text-align:center;margin-top:18px;margin-bottom:0">© 2026 Ignasi Martí Palet</p>'
+    +'<button id="litInfoBtn" style="'+F+'width:100%;margin-top:10px;padding:9px;font-size:13px;font-weight:500;border:1.5px solid #e5e7eb;border-radius:12px;background:transparent;color:#6b7280;cursor:pointer">ℹ️ Com funciona</button>'
+    +'<p style="font-size:11px;color:#9ca3af;text-align:center;margin-top:14px;margin-bottom:0">© 2026 Ignasi Martí Palet</p>'
     +'</div>';
 
-  const ov=cO(html,o=>_rm(o));
+  const ov=cO(litMainHTML,o=>_rm(o));
 
-  _st(()=>{
+  function sInfoLIT(){
+    const box=ov.firstElementChild;
+    if(!box)return;
+    const sec=(tit,items)=>'<div style="'+F+'margin-bottom:16px"><p style="'+F+'font-size:11px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:0.08em;margin:0 0 8px">'+tit+'</p><div style="border-radius:10px;overflow:hidden;border:1px solid #f0f0f0">'+items.map((it,i)=>'<div style="'+F+'padding:9px 14px;font-size:13px;color:#374151;line-height:1.5'+(i>0?';border-top:1px solid #f3f4f6':'')+'">'+it+'</div>').join('')+'</div></div>';
+    box.innerHTML='<div style="'+F+'max-height:70vh;overflow-y:auto">'
+      +'<button id="litInfoBack" style="'+F+'background:none;border:none;color:#6b7280;font-size:13px;cursor:pointer;padding:0;margin-bottom:16px;display:block">← Tornar</button>'
+      +'<h2 style="'+F+'margin:0 0 18px;font-size:18px;font-weight:700;color:#0f0f1a">ℹ️ Com funciona</h2>'
+      +sec(titol,['💬 Enganxa un text per alumne, <strong>un per línia</strong>, en el mateix ordre que apareixen a la pantalla.','↵ Cada text ha d\'ocupar exactament una sola línia, <strong>sense salts de línia interns</strong>.','⬜ Per saltar-te un alumne, deixa la línia corresponent <strong>buida</strong>.'])
+      +'</div>';
+    _st(()=>{const b=_id('litInfoBack');if(b)b.onclick=()=>{box.innerHTML=litMainHTML;_st(bindLIT,50);};},50);
+  }
+
+  function bindLIT(){
     const ta=_id('litTA');
     const info=_id('litInfo');
     const ok=_id('litOk');
     const cancel=_id('litCancel');
+    const ib=_id('litInfoBtn');
 
     if(ta)ta.focus();
 
@@ -273,6 +302,7 @@ if(isA){
     }
 
     if(cancel)cancel.onclick=()=>{if(ov.parentNode)_rm(ov);};
+    if(ib)ib.onclick=sInfoLIT;
 
     if(ok)ok.onclick=()=>{
       if(!ta)return;
@@ -282,34 +312,17 @@ if(isA){
         info.textContent='⚠️ Enganxa almenys un comentari';
         return;
       }
-      // Si hi havia contingut previ, confirmació visual ja mostrada a l'avís — procedim directament
       const textareas=Array.from(document.querySelectorAll('textarea')).filter((_,i)=>esGeneral?i%2===1:i%2===0);
       const n=Math.min(comentaris.length,textareas.length);
-      for(let i=0;i<n;i++){
-        const taEl=textareas[i];
-        const scope=angular.element(taEl).scope();
-        const model=taEl.getAttribute('data-ng-model')||taEl.getAttribute('ng-model');
-        if(scope&&model){
-          const parts=model.split('.');
-          let obj=scope;
-          for(let j=0;j<parts.length-1;j++)obj=obj[parts[j]];
-          obj[parts[parts.length-1]]=comentaris[i];
-          scope.$apply();
-        }else{
-          taEl.value=comentaris[i];
-          taEl.dispatchEvent(new Event('input',{bubbles:true}));
-          taEl.dispatchEvent(new Event('change',{bubbles:true}));
-        }
-      }
+      for(let i=0;i<n;i++){const taEl=textareas[i];const scope=angular.element(taEl).scope();const model=taEl.getAttribute('data-ng-model')||taEl.getAttribute('ng-model');if(scope&&model){const parts=model.split('.');let obj=scope;for(let j=0;j<parts.length-1;j++)obj=obj[parts[j]];obj[parts[parts.length-1]]=comentaris[i];scope.$apply();}else{taEl.value=comentaris[i];taEl.dispatchEvent(new Event('input',{bubbles:true}));taEl.dispatchEvent(new Event('change',{bubbles:true}));}}
       if(ov.parentNode)_rm(ov);
-      // Confirmació: pill al cantó superior
       const pill=_c('div');
       pill.style.cssText=F+'position:fixed;top:20px;right:20px;padding:12px 20px;background:#0f0f1a;color:#fff;font-size:13px;font-weight:500;border-radius:100px;z-index:999998;box-shadow:0 8px 28px rgba(0,0,0,0.22);display:flex;align-items:center;gap:10px';
       pill.innerHTML='<span style="width:8px;height:8px;border-radius:50%;background:#4ade80;display:inline-block"></span><span>'+n+' alumnes actualitzats ✓</span>';
-      _ba(pill);
-      _st(()=>{if(pill.parentNode)_rm(pill);},3000);
+      _ba(pill);_st(()=>{if(pill.parentNode)_rm(pill);},3000);
     };
-  },100);
+  }
+  _st(bindLIT,100);
 
 // ── AVALUACIONS FINALS BATXILLERAT (isBATX) — comprovat ABANS que isM ─────────
 }else if(isBATX){
@@ -335,6 +348,16 @@ if(isA){
   function hasComment(row){const btn=row.querySelector('a.glyphicon.glyphicon-new-window');return btn&&!btn.classList.contains('emptyIcon');}
   function hN(){return gR().some(rN);}
   function hC(){return gR().some(hasComment);}
+
+  // Normalitza textos llargs de qualificació ESO a la sigla que espera el select
+  function nrmESO(v){
+    const s=v.trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+    if(s==='na'||s==='no assolit'||s==='no assoliment')return 'NA';
+    if(s==='as'||s==='satisfactori'||s==='assoliment satisfactori')return 'AS';
+    if(s==='an'||s==='notable'||s==='assoliment notable')return 'AN';
+    if(s==='ae'||s==='excel·lent'||s==='excellent'||s==='assoliment excel·lent'||s==='assoliment excellent')return 'AE';
+    return v.trim();
+  }
 
   function aN(text,idx2,wM){
     const vals=text.split('\n').map(s=>s.trim());
@@ -471,12 +494,20 @@ if(isA){
     const parts=[];if(nWarn)parts.push('notes');if(cWarn)parts.push('comentaris');
     if(parts.length){sW(`Ja hi ha ${parts.join(' i ')} introduïts.`,mode);}else{sSc(mode,'overwrite');}
   }
+  function sInfoBATX(){
+    md.innerHTML='';md.ap(mkBack(sCh));
+    const h=_c('p');h.style.cssText='font-weight:500;font-size:18px;margin:0 0 18px;color:#0f0f1a;';h.textContent='ℹ️ Com funciona';md.ap(h);
+    function sec(tit,items){const wrap=_c('div');wrap.style.cssText='margin-bottom:16px;';const lbl=_c('p');lbl.style.cssText='font-size:11px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:0.08em;margin:0 0 8px;';lbl.textContent=tit;wrap.ap(lbl);const box=_c('div');box.style.cssText='border-radius:10px;overflow:hidden;border:1px solid #eee;';items.forEach((it,i)=>{const d=_c('div');d.style.cssText='padding:9px 14px;font-size:13px;color:#374151;line-height:1.5;'+(i>0?'border-top:1px solid #f3f4f6;':'');d.innerHTML=it;box.ap(d);});wrap.ap(box);md.ap(wrap);}
+    sec('Notes',['📋 Enganxa una nota per alumne, <strong>una per línia</strong>, en el mateix ordre que la taula.','⬜ Per saltar-te un alumne, deixa la línia corresponent en <strong>blanc</strong>.','🔢 Format acceptat: <strong>números</strong> (p.ex. 7, 8.5).']);
+    sec('Comentaris',['💬 Enganxa un comentari per alumne, <strong>un per línia</strong>, en el mateix ordre que la taula.','↵ Cada comentari ha d\'ocupar exactament una sola línia, <strong>sense salts de línia interns</strong>.','⬜ Per saltar-te un alumne, deixa la línia corresponent en <strong>blanc</strong>.']);
+  }
   function sCh(){
     md.innerHTML='';md.ap(mkCtx());
     const h=_c('p');h.style.cssText='font-weight:500;font-size:16px;margin:0 0 16px;';h.textContent='Què vols fer?';md.ap(h);
     md.ap(mkBtn('Posar notes','#4e7f4e',()=>cAS('notes')));
     md.ap(mkBtn('Posar comentaris','#3d6b9e',()=>cAS('comentaris')));
     md.ap(mkBtn('Posar notes i comentaris','#7a4e9e',()=>cAS('ambdos')));
+    const biB=_c('button');biB.textContent='ℹ️ Com funciona';biB.style.cssText='width:100%;padding:9px;border:1.5px solid #e5e7eb;border-radius:8px;background:transparent;font-size:13px;cursor:pointer;color:#6b7280;margin-top:4px;';biB.onclick=sInfoBATX;md.ap(biB);
     md.ap(mkCancel());
     const cr=_c('p');cr.textContent='© 2026 Ignasi Martí Palet';cr.style.cssText='font-size:11px;color:#9ca3af;text-align:center;margin-top:14px;margin-bottom:0';md.ap(cr);
   }
@@ -525,17 +556,6 @@ if(isA){
   function hN(){return gR().some(rN);}
   function hC(){return gR().some(rCm);}
 
-  // Normalitza textos llargs de qualificació ESO a la sigla que espera el select
-  function nrmESO(v){
-    const s=v.trim().toLowerCase()
-      .normalize('NFD').replace(/[\u0300-\u036f]/g,''); // treu accents per comparar
-    if(s==='na'||s==='no assolit'||s==='no assoliment')return 'NA';
-    if(s==='as'||s==='satisfactori'||s==='assoliment satisfactori')return 'AS';
-    if(s==='an'||s==='notable'||s==='assoliment notable')return 'AN';
-    if(s==='ae'||s==='excel·lent'||s==='excellent'||s==='assoliment excel·lent'||s==='assoliment excellent')return 'AE';
-    return v.trim(); // si no coincideix, retorna el valor original (p.ex. números per a batx)
-  }
-
   function aN(text,idx2,wM){
     const grades=text.split('\n').map(s=>s.split('\t'));
     const rows=gR();const tg=idx2!==null?idx2.map(i=>rows[i]):rows;const sk=[];
@@ -547,7 +567,7 @@ if(isA){
       for(let i=0;i<grades.length&&i<tgInps.length;i++){
         const inp=tgInps[i];if(!inp)continue;
         if(wM==='skip'&&tg[i]&&rN(tg[i])){sk.push(gN(tg[i]));continue;}
-        const v=nrmESO(grades[i][0]||'');if(v==='')continue;
+        const v=(grades[i][0]||'').trim();if(v==='')continue;
         upd.push({inp,v});
       }
       upd.forEach(({inp,v})=>inp.value=v);
@@ -563,10 +583,9 @@ if(isA){
       const sg=grades[i];
       for(let j=0;j<sg.length;j++){
         if(sg[j]!==''){
-          const val=nrmESO(sg[j]);
           const sel=row.querySelector(`td:nth-child(${6+j})>div>div>select`);
-          if(sel){sel.value='string:'+val;sel.dispatchEvent(new Event('change'));}
-          else{const inp=row.querySelector(`td:nth-child(${6+j}) input[type="text"]`)||row.querySelector(`td:nth-child(${6+j}) input[type="number"]`)||row.querySelector(`td:nth-child(${6+j}) input`);if(inp){inp.value=val;inp.dispatchEvent(new Event('input',{bubbles:true}));inp.dispatchEvent(new Event('change',{bubbles:true}));}}
+          if(sel){sel.value='string:'+sg[j].trim();sel.dispatchEvent(new Event('change'));}
+          else{const inp=row.querySelector(`td:nth-child(${6+j}) input[type="text"]`)||row.querySelector(`td:nth-child(${6+j}) input[type="number"]`)||row.querySelector(`td:nth-child(${6+j}) input`);if(inp){inp.value=sg[j].trim();inp.dispatchEvent(new Event('input',{bubbles:true}));inp.dispatchEvent(new Event('change',{bubbles:true}));}}
         }
       }
     }
@@ -612,10 +631,17 @@ if(isA){
   function sSc(mode,wM){md.innerHTML='';md.ap(mkCtx());md.ap(mkBack(sCh));const h=_c('p');h.textContent='A quins alumnes?';h.style.cssText='font-weight:500;font-size:16px;margin:0 0 16px;';md.ap(h);md.ap(mkBtn('Tots els alumnes del grup',clrs[mode],()=>sF(mode,null,wM)));md.ap(mkBtn('Escollir alumnes','#888',()=>sPk(mode,wM)));}
   function sW(msg,mode){md.innerHTML='';md.ap(mkCtx());md.ap(mkBack(sCh));const ic=_c('div');ic.textContent='⚠';ic.style.cssText='font-size:28px;margin-bottom:8px;';md.ap(ic);const h=_c('p');h.style.cssText='font-weight:500;font-size:15px;margin:0 0 8px;';h.textContent='Ja hi ha dades existents';md.ap(h);const s=_c('p');s.style.cssText='font-size:13px;color:#666;margin:0 0 16px;line-height:1.5;';s.textContent=msg;md.ap(s);md.ap(mkBtn('Reescriure tot','#c0392b',()=>sSc(mode,'overwrite')));md.ap(mkBtn('No sobreescriure els que ja en tienen','#e67e22',()=>sSc(mode,'skip')));md.ap(mkCancel('Cancel·lar',close));}
   function cAS(mode){const nWarn=(mode==='notes'||mode==='ambdos')&&hN();const cWarn=(mode==='comentaris'||mode==='ambdos')&&hC();const parts=[];if(nWarn)parts.push('notes');if(cWarn)parts.push('comentaris');if(parts.length){sW(`Ja hi ha ${parts.join(' i ')} introduïts.`,mode);}else{sSc(mode,'overwrite');}}
-  function sCh(){md.innerHTML='';md.ap(mkCtx());const h=_c('p');h.style.cssText='font-weight:500;font-size:16px;margin:0 0 16px;';h.textContent='Què vols fer?';md.ap(h);md.ap(mkBtn('Posar notes','#4e7f4e',()=>cAS('notes')));md.ap(mkBtn('Posar comentaris','#3d6b9e',()=>cAS('comentaris')));md.ap(mkBtn('Posar notes i comentaris','#7a4e9e',()=>cAS('ambdos')));md.ap(mkCancel());const cr=_c('p');cr.textContent='© 2026 Ignasi Martí Palet';cr.style.cssText='font-size:11px;color:#9ca3af;text-align:center;margin-top:14px;margin-bottom:0';md.ap(cr);}
+  function sInfoM(){
+    md.innerHTML='';md.ap(mkBack(sCh));
+    const h=_c('p');h.style.cssText='font-weight:500;font-size:18px;margin:0 0 18px;color:#0f0f1a;';h.textContent='ℹ️ Com funciona';md.ap(h);
+    function sec(tit,items){const wrap=_c('div');wrap.style.cssText='margin-bottom:16px;';const lbl=_c('p');lbl.style.cssText='font-size:11px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:0.08em;margin:0 0 8px;';lbl.textContent=tit;wrap.ap(lbl);const box=_c('div');box.style.cssText='border-radius:10px;overflow:hidden;border:1px solid #eee;';items.forEach((it,i)=>{const d=_c('div');d.style.cssText='padding:9px 14px;font-size:13px;color:#374151;line-height:1.5;'+(i>0?'border-top:1px solid #f3f4f6;':'');d.innerHTML=it;box.ap(d);});wrap.ap(box);md.ap(wrap);}
+    sec('Notes ESO',['📋 Enganxa una nota per alumne, <strong>una per línia</strong>, en el mateix ordre que la taula. Pots enganxar directament des d\'Excel.','⬜ Per saltar-te un alumne, deixa la línia corresponent en <strong>blanc</strong>.','🔤 Formats acceptats: <strong>NA, AS, AN, AE</strong> &mdash; o el text complet: <strong>No assolit, Satisfactori, Notable, Excel&middot;lent</strong> &mdash; o també: <strong>No Assoliment, Assoliment Satisfactori, Assoliment Notable, Assoliment Excel&middot;lent</strong>.']);
+    sec('Comentaris',['💬 Enganxa un comentari per alumne, <strong>un per línia</strong>, en el mateix ordre que la taula.','↵ Cada comentari ha d\'ocupar exactament una sola línia, <strong>sense salts de línia interns</strong>.','⬜ Per saltar-te un alumne, deixa la línia corresponent en <strong>blanc</strong>.']);
+  }
+  function sCh(){md.innerHTML='';md.ap(mkCtx());const h=_c('p');h.style.cssText='font-weight:500;font-size:16px;margin:0 0 16px;';h.textContent='Què vols fer?';md.ap(h);md.ap(mkBtn('Posar notes','#4e7f4e',()=>cAS('notes')));md.ap(mkBtn('Posar comentaris','#3d6b9e',()=>cAS('comentaris')));md.ap(mkBtn('Posar notes i comentaris','#7a4e9e',()=>cAS('ambdos')));const biM=_c('button');biM.textContent='ℹ️ Com funciona';biM.style.cssText='width:100%;padding:9px;border:1.5px solid #e5e7eb;border-radius:8px;background:transparent;font-size:13px;cursor:pointer;color:#6b7280;margin-top:4px;';biM.onclick=sInfoM;md.ap(biM);md.ap(mkCancel());const cr=_c('p');cr.textContent='© 2026 Ignasi Martí Palet';cr.style.cssText='font-size:11px;color:#9ca3af;text-align:center;margin-top:14px;margin-bottom:0';md.ap(cr);}
   sCh();ov.ap(md);_ba(ov);
 
 }else{
-  alert('⚠️ Aquest bookmarklet només funciona a:\n• Qualificacions per grup i matèria\n• Qualificacions per grup i alumne/a\n• Avaluacions finals de batxillerat\n• Comentaris de tutor / Consell orientador');
+  (function(){var ov=document.createElement('div');ov.style.cssText='position:fixed;inset:0;background:rgba(10,10,20,0.5);backdrop-filter:blur(6px);z-index:999999;display:flex;align-items:center;justify-content:center;font-family:system-ui,sans-serif';var box=document.createElement('div');box.style.cssText='background:#fff;border-radius:20px;padding:32px;width:420px;max-width:92vw;max-height:85vh;overflow-y:auto;box-shadow:0 32px 80px rgba(0,0,0,0.18)';function row(icon,title,sub){var d=document.createElement('div');d.style.cssText='display:flex;gap:12px;margin-bottom:16px;align-items:flex-start';var ic=document.createElement('div');ic.textContent=icon;ic.style.cssText='font-size:26px;flex-shrink:0;margin-top:1px';var tx=document.createElement('div');var t=document.createElement('div');t.textContent=title;t.style.cssText='font-size:18px;font-weight:600;color:#0f0f1a;margin-bottom:5px';tx.appendChild(t);if(sub){var s=document.createElement('div');s.innerHTML=sub;s.style.cssText='font-size:15px;color:#6b7280;line-height:1.6';tx.appendChild(s);}d.appendChild(ic);d.appendChild(tx);box.appendChild(d);}var hd=document.createElement('div');hd.style.cssText='display:flex;align-items:center;justify-content:space-between;margin-bottom:20px';var ht=document.createElement('div');var h1=document.createElement('div');h1.textContent='⚠️ Pàgina no reconeguda';h1.style.cssText='font-size:22px;font-weight:700;color:#0f0f1a';var h2=document.createElement('div');h2.textContent='Aquest bookmarklet només funciona a:';h2.style.cssText='font-size:15px;color:#9ca3af;margin-top:3px';ht.appendChild(h1);ht.appendChild(h2);var cl=document.createElement('button');cl.textContent='×';cl.style.cssText='width:32px;height:32px;border-radius:50%;border:none;background:#f3f4f6;color:#6b7280;font-size:18px;cursor:pointer;flex-shrink:0';cl.onclick=function(){document.body.removeChild(ov);};hd.appendChild(ht);hd.appendChild(cl);box.appendChild(hd);var sep=document.createElement('div');sep.style.cssText='height:1px;background:#f3f4f6;margin-bottom:16px';box.appendChild(sep);row('📊','Qualificacions per grup i matèria','Entra a la <strong>matèria específica</strong> abans d\'executar');row('👤','Qualificacions per grup i alumne/a','Entra al <strong>primer alumne</strong> abans d\'executar');row('📝','Avaluacions finals d\'ESO o batxillerat','→ Per grup i alumne: entra al <strong>primer alumne</strong><br>→ Per grup i matèria: entra a la <strong>matèria específica</strong>');row('🎓','Avaluació final — Qualificacions per al tutor de grup','Comentaris de tutor / Consell orientador');var cr=document.createElement('div');cr.textContent='© 2026 Ignasi Martí Palet';cr.style.cssText='font-size:11px;color:#9ca3af;text-align:center;margin-top:8px';box.appendChild(cr);ov.appendChild(box);ov.addEventListener('click',function(e){if(e.target===ov)document.body.removeChild(ov);});document.body.appendChild(ov);})()
 }
 })();
