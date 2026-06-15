@@ -93,7 +93,106 @@ if(isA){
   function dC(callback){let html='<div style="'+F+'text-align:center"><div style="width:52px;height:52px;background:#0f0f1a;border-radius:16px;display:inline-flex;align-items:center;justify-content:center;font-size:26px;margin-bottom:16px">💬</div><h2 style="'+F+'margin:0 0 6px;font-size:21px;font-weight:700;color:#0f0f1a">Comentaris</h2><p style="'+F+'margin:0 0 20px;font-size:13px;color:#9ca3af">Enganxa els comentaris (un per alumne)</p><textarea id="tutorTA" placeholder="Comentari alumne 1&#10;Comentari alumne 2&#10;Comentari alumne 3&#10;..." style="'+F+'width:100%;height:160px;border:1.5px solid #e5e7eb;border-radius:12px;padding:14px;font-size:13px;color:#0f0f1a;resize:vertical;outline:none;line-height:1.6"></textarea><div style="display:flex;gap:10px;margin-top:16px"><button id="btnCancelCom" style="'+F+'flex:1;padding:13px;font-size:14px;font-weight:600;border:1.5px solid #e5e7eb;border-radius:12px;background:transparent;color:#9ca3af;cursor:pointer">Cancel·lar</button><button id="btnOkCom" style="'+F+'flex:2;padding:13px;font-size:14px;font-weight:600;border:none;border-radius:12px;background:#0f0f1a;color:#fff;cursor:pointer">Continuar →</button></div></div>';
   let ov=cO(html,null);_st(()=>{let ta=_id('tutorTA');if(ta)ta.focus();let ok=_id('btnOkCom');if(ok)ok.onclick=()=>{let val=ta?ta.value:'';if(ov.parentNode)_rm(ov);callback(val);};let ca=_id('btnCancelCom');if(ca)ca.onclick=()=>{if(ov.parentNode)_rm(ov);};},100);}
 
-  let mH='<div style="'+F+'text-align:center"><div style="width:52px;height:52px;background:#0f0f1a;border-radius:16px;display:inline-flex;align-items:center;justify-content:center;font-size:26px;margin-bottom:16px">🎓</div><h2 style="'+F+'margin:0 0 6px;font-size:21px;font-weight:700;color:#0f0f1a">Eina de Tutoria'+(batxAmbInputs?' (batxillerat)':'')+'</h2><p style="'+F+'margin:0 0 28px;font-size:13px;color:#9ca3af">Selecciona l\'acció que vols executar</p><div style="display:flex;flex-direction:column;gap:10px"><button id="btn1" style="'+F+'padding:14px 20px;font-size:14px;font-weight:600;border:none;border-radius:12px;background:#0f0f1a;color:#fff;cursor:pointer;display:flex;align-items:center;gap:12px">💬<span>Comentaris de tutor</span></button><button id="btn2" style="'+F+'padding:14px 20px;font-size:14px;font-weight:600;border:none;border-radius:12px;background:#0f0f1a;color:#fff;cursor:pointer;display:flex;align-items:center;gap:12px">📋<span>Acta de tutoria</span></button><button id="btn3" style="'+F+'padding:14px 20px;font-size:14px;font-weight:600;border:2px solid #0f0f1a;border-radius:12px;background:#fff;color:#0f0f1a;cursor:pointer;display:flex;align-items:center;gap:12px">⚡<span>Les dues a la vegada</span></button><button id="btnInfo" style="'+F+'padding:10px 20px;font-size:13px;font-weight:500;border:1.5px solid #e5e7eb;border-radius:12px;background:transparent;color:#6b7280;cursor:pointer;margin-top:2px">ℹ️ Com funciona</button><button id="btnX" style="'+F+'padding:10px 20px;font-size:13px;font-weight:500;border:1.5px solid #e5e7eb;border-radius:12px;background:transparent;color:#9ca3af;cursor:pointer;margin-top:2px">Cancel·lar</button><p style="font-size:11px;color:#9ca3af;text-align:center;margin-top:14px;margin-bottom:0">© 2026 Ignasi Martí Palet</p><div></div>';
+  // ── DETECCIÓ TREBALL DE SÍNTESI ──
+  function gTSSelect(){
+    const rows=_qa('tr.alturallistat');
+    for(const row of rows){
+      const tds=row.querySelectorAll('td');
+      for(const td of tds){
+        const txt=(td.textContent||'').trim().toLowerCase();
+        if(txt==='ts1'||txt.includes('treball de síntesi')||txt.includes('treball de sintesi')){
+          const sel=row.querySelector("select[data-ng-model='contingut.qualitativa']");
+          if(sel)return sel;
+        }
+      }
+    }
+    return null;
+  }
+  const teTS=!!gTSSelect();
+
+  // Normalitza el valor TS acceptant text complet o sigla
+  function normalitzaTS(v){
+    const s=(v||'').trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+    if(s==='fa'||s==='fet amb aprofitament')return 'FA';
+    if(s==='ft'||s==='fet')return 'FT';
+    if(s==='nf'||s==='no fet')return 'NF';
+    return null;
+  }
+
+  function posarTS(val){
+    const sel=gTSSelect();
+    if(!sel)return false;
+    const v=normalitzaTS(val);
+    if(!v)return true; // buit o invàlid → es deixa sense canviar
+    const opt=Array.from(sel.options).find(o=>o.value==='string:'+v);
+    if(!opt)return false;
+    sel.value=opt.value;
+    sel.dispatchEvent(new Event('change',{bubbles:true}));
+    try{
+      const scope=angular.element(sel).scope();
+      if(scope){scope.$apply(()=>{
+        const contingut=scope.contingut;
+        if(contingut){contingut.qualitativa=v;scope.onChangeQualitativa(contingut,false);}
+      });}
+    }catch(e){}
+    return true;
+  }
+
+  // Diàleg per demanar notes TS
+  function dTS(callback){
+    let html='<div style="'+F+'text-align:center">'
+      +'<div style="width:52px;height:52px;background:#0f0f1a;border-radius:16px;display:inline-flex;align-items:center;justify-content:center;font-size:26px;margin-bottom:16px">📝</div>'
+      +'<h2 style="'+F+'margin:0 0 6px;font-size:21px;font-weight:700;color:#0f0f1a">Treball de Síntesi</h2>'
+      +'<p style="'+F+'margin:0 0 20px;font-size:13px;color:#9ca3af">Enganxa les notes (FA, FT, NF o text complet)</p>'
+      +'<textarea id="tutorTAts" placeholder="FA&#10;NF&#10;FT&#10;..." style="'+F+'width:100%;height:160px;border:1.5px solid #e5e7eb;border-radius:12px;padding:14px;font-size:13px;color:#0f0f1a;resize:vertical;outline:none;line-height:1.6"></textarea>'
+      +'<div style="display:flex;gap:10px;margin-top:16px">'
+      +'<button id="btnCancelTS" style="'+F+'flex:1;padding:13px;font-size:14px;font-weight:600;border:1.5px solid #e5e7eb;border-radius:12px;background:transparent;color:#9ca3af;cursor:pointer">Cancel·lar</button>'
+      +'<button id="btnOkTS" style="'+F+'flex:2;padding:13px;font-size:14px;font-weight:600;border:none;border-radius:12px;background:#0f0f1a;color:#fff;cursor:pointer">Continuar →</button>'
+      +'</div></div>';
+    let ov=cO(html,null);
+    _st(()=>{
+      let ta=_id('tutorTAts');if(ta)ta.focus();
+      let ok=_id('btnOkTS');if(ok)ok.onclick=()=>{let val=ta?ta.value:'';if(ov.parentNode)_rm(ov);callback(val);};
+      let ca=_id('btnCancelTS');if(ca)ca.onclick=()=>{if(ov.parentNode)_rm(ov);};
+    },100);
+  }
+
+  // Diàleg combinat comentaris + TS
+  function dCTS(callback){
+    let html='<div style="'+F+'">'
+      +'<div style="text-align:center;margin-bottom:20px">'
+      +'<div style="width:52px;height:52px;background:#0f0f1a;border-radius:16px;display:inline-flex;align-items:center;justify-content:center;font-size:26px;margin-bottom:16px">⚡</div>'
+      +'<h2 style="'+F+'margin:0 0 6px;font-size:21px;font-weight:700;color:#0f0f1a">Comentaris + Treball de Síntesi</h2>'
+      +'<p style="'+F+'margin:0;font-size:13px;color:#9ca3af">Un per línia, en el mateix ordre</p>'
+      +'</div>'
+      +'<p style="'+F+'font-size:12px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:0.06em;margin:0 0 6px">Comentaris de tutor</p>'
+      +'<textarea id="tutorTAcom2" placeholder="Comentari alumne 1&#10;Comentari alumne 2&#10;..." style="'+F+'width:100%;height:110px;border:1.5px solid #e5e7eb;border-radius:12px;padding:14px;font-size:13px;color:#0f0f1a;resize:vertical;outline:none;line-height:1.6;margin-bottom:14px"></textarea>'
+      +'<p style="'+F+'font-size:12px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:0.06em;margin:0 0 6px">Notes Treball de Síntesi</p>'
+      +'<textarea id="tutorTAts2" placeholder="FA&#10;NF&#10;FT&#10;..." style="'+F+'width:100%;height:110px;border:1.5px solid #e5e7eb;border-radius:12px;padding:14px;font-size:13px;color:#0f0f1a;resize:vertical;outline:none;line-height:1.6;margin-bottom:16px"></textarea>'
+      +'<div style="display:flex;gap:10px">'
+      +'<button id="btnCancelCTS" style="'+F+'flex:1;padding:13px;font-size:14px;font-weight:600;border:1.5px solid #e5e7eb;border-radius:12px;background:transparent;color:#9ca3af;cursor:pointer">Cancel·lar</button>'
+      +'<button id="btnOkCTS" style="'+F+'flex:2;padding:13px;font-size:14px;font-weight:600;border:none;border-radius:12px;background:#0f0f1a;color:#fff;cursor:pointer">Continuar →</button>'
+      +'</div></div>';
+    let ov=cO(html,null);
+    _st(()=>{
+      let taC=_id('tutorTAcom2');if(taC)taC.focus();
+      let ok=_id('btnOkCTS');if(ok)ok.onclick=()=>{
+        let valC=taC?taC.value:'';
+        let taT=_id('tutorTAts2');let valT=taT?taT.value:'';
+        if(ov.parentNode)_rm(ov);callback(valC,valT);
+      };
+      let ca=_id('btnCancelCTS');if(ca)ca.onclick=()=>{if(ov.parentNode)_rm(ov);};
+    },100);
+  }
+
+  const btnTSStyle=(teTS
+    ?''+F+'padding:14px 20px;font-size:14px;font-weight:600;border:none;border-radius:12px;background:#0f0f1a;color:#fff;cursor:pointer;display:flex;align-items:center;gap:12px'
+    :''+F+'padding:14px 20px;font-size:14px;font-weight:600;border:none;border-radius:12px;background:#d1d5db;color:#9ca3af;cursor:not-allowed;display:flex;align-items:center;gap:12px');
+  const btn4Style=(teTS
+    ?''+F+'padding:14px 20px;font-size:14px;font-weight:600;border:2px solid #0f0f1a;border-radius:12px;background:#fff;color:#0f0f1a;cursor:pointer;display:flex;align-items:center;gap:12px'
+    :''+F+'padding:14px 20px;font-size:14px;font-weight:600;border:2px solid #d1d5db;border-radius:12px;background:#fff;color:#9ca3af;cursor:not-allowed;display:flex;align-items:center;gap:12px');
+
+  let mH='<div style="'+F+'text-align:center"><div style="width:52px;height:52px;background:#0f0f1a;border-radius:16px;display:inline-flex;align-items:center;justify-content:center;font-size:26px;margin-bottom:16px">🎓</div><h2 style="'+F+'margin:0 0 6px;font-size:21px;font-weight:700;color:#0f0f1a">Eina de Tutoria'+(batxAmbInputs?' (batxillerat)':'')+'</h2><p style="'+F+'margin:0 0 28px;font-size:13px;color:#9ca3af">Selecciona l\'acció que vols executar</p><div style="display:flex;flex-direction:column;gap:10px"><button id="btn1" style="'+F+'padding:14px 20px;font-size:14px;font-weight:600;border:none;border-radius:12px;background:#0f0f1a;color:#fff;cursor:pointer;display:flex;align-items:center;gap:12px">💬<span>Comentaris de tutor</span></button><button id="btnTS" style="'+btnTSStyle+'">📝<span>Treball de Síntesi</span>'+(teTS?'':'<span style="font-size:11px;margin-left:auto;color:#9ca3af">No disponible</span>')+'</button><button id="btn2" style="'+F+'padding:14px 20px;font-size:14px;font-weight:600;border:none;border-radius:12px;background:#0f0f1a;color:#fff;cursor:pointer;display:flex;align-items:center;gap:12px">📋<span>Acta de tutoria</span></button><button id="btn4" style="'+btn4Style+'">⚡<span>Comentaris + Treball de Síntesi</span>'+(teTS?'':'<span style="font-size:11px;margin-left:auto;color:#9ca3af">No disponible</span>')+'</button><button id="btn3" style="'+F+'padding:14px 20px;font-size:14px;font-weight:600;border:2px solid #0f0f1a;border-radius:12px;background:#fff;color:#0f0f1a;cursor:pointer;display:flex;align-items:center;gap:12px">⚡<span>Comentaris + Acta a la vegada</span></button><button id="btnInfo" style="'+F+'padding:10px 20px;font-size:13px;font-weight:500;border:1.5px solid #e5e7eb;border-radius:12px;background:transparent;color:#6b7280;cursor:pointer;margin-top:2px">ℹ️ Com funciona</button><button id="btnX" style="'+F+'padding:10px 20px;font-size:13px;font-weight:500;border:1.5px solid #e5e7eb;border-radius:12px;background:transparent;color:#9ca3af;cursor:pointer;margin-top:2px">Cancel·lar</button><p style="font-size:11px;color:#9ca3af;text-align:center;margin-top:14px;margin-bottom:0">© 2026 Ignasi Martí Palet</p><div></div>';
   let mO=cO(mH,o=>_rm(o));
   function tM(){if(mO.parentNode)_rm(mO);}
 
@@ -105,11 +204,35 @@ if(isA){
       +'<button id="btnInfoBack" style="'+F+'background:none;border:none;color:#6b7280;font-size:13px;cursor:pointer;padding:0;margin-bottom:16px;display:block">← Tornar</button>'
       +'<h2 style="'+F+'margin:0 0 18px;font-size:18px;font-weight:700;color:#0f0f1a">ℹ️ Com funciona</h2>'
       +sec('Comentaris de tutor',['💬 Enganxa un comentari per alumne, <strong>un per línia</strong>, en el mateix ordre que apareixen a la pantalla.','↵ Cada comentari ha d\'ocupar exactament una sola línia, <strong>sense salts de línia interns</strong>.','⬜ Per saltar-te un alumne, deixa la línia corresponent en <strong>blanc</strong>.'])
+      +sec('Treball de Síntesi',['📝 Enganxa una nota per alumne, <strong>una per línia</strong>.','✅ Formats acceptats: <strong>FA, FT, NF</strong> o el text complet: <strong>Fet amb aprofitament, Fet, No fet</strong>.','⬜ Per saltar-te un alumne, deixa la línia corresponent en <strong>blanc</strong>.','⚠️ Disponible només si la matèria Treball de Síntesi apareix a la pantalla.'])
       +sec('Acta de tutoria',['📋 Recorre tots els alumnes automàticament i genera un resum de suspesos per matèria i per alumne.','▶️ No cal enganxar res: simplement prem el botó i espera que acabi.'])
       +'</div>';
     _st(()=>{const b=_id('btnInfoBack');if(b)b.onclick=()=>{box.innerHTML=mH;_st(bindTutoriaButtons,50);};},50);
   }
+
   function o1(){tM();dC(function(text){if(!text.trim())return;let cm=text.split("\n");let i=0;let prog=cP("Comentaris: 0 / "+cm.length);function run(){if(i>=cm.length){sP(prog,"Tots els comentaris processats! ✓");return;}sP(prog,"Comentaris: "+(i+1)+" / "+cm.length);let oB=_q("a[data-ng-click='showCommentsModal()']");if(!oB){_st(run,500);return;}oB.click();let wM=setInterval(function(){let ta=_q("textarea[data-ng-model='comentariGeneral.comentari']");let sC=_q("a[data-ng-click='saveComentariGeneral()']");if(ta&&sC){clearInterval(wM);let c=(cm[i]||"").trim();if(c!==""){ta.value=c;ta.dispatchEvent(new InputEvent("input",{bubbles:true}));sC.click();}_st(function(){let sG=_q("a[data-ng-click='saveNotesAvaluacio()']");if(sG)sG.click();let wS=setInterval(function(){let alerts=_qa(".alert-success");let found=false;alerts.forEach(function(a){if(a.innerText.toLowerCase().includes("desat"))found=true;});if(found){clearInterval(wS);let next=_q("a[data-ng-click=\"canviAlumne('next')\"]");if(!next||next.disabled){sP(prog,"Tots els comentaris processats! ✓");return;}angular.element(next).triggerHandler('click');i++;_st(run,7000);}},500);},2000);}},200);}run();});}
+
+  // ── FUNCIÓ: NOMÉS TREBALL DE SÍNTESI ──
+  function oTS(){tM();dTS(function(text){if(!text.trim())return;let ts=text.split("\n");let i=0;let prog=cP("TS: 0 / "+ts.length);
+  function esperaTS(cb){
+    let lVal=null,sT=0;
+    let int=setInterval(()=>{
+      const sel=gTSSelect();
+      if(sel){const v=sel.value;if(v===lVal){sT+=100;if(sT>=400){clearInterval(int);cb();}}else{sT=0;lVal=v;}}
+      else{sT=0;lVal=null;}
+    },100);}
+  function run(){if(i>=ts.length){sP(prog,"Treball de Síntesi processat! ✓");return;}sP(prog,"TS: "+(i+1)+" / "+ts.length);
+  esperaTS(()=>{posarTS(ts[i]);
+  let sG=_q("a[data-ng-click='saveNotesAvaluacio()']");if(sG)sG.click();
+  let wS=setInterval(function(){let alerts=_qa(".alert-success");let found=false;alerts.forEach(function(a){if(a.innerText.toLowerCase().includes("desat"))found=true;});if(found){clearInterval(wS);let next=_q("a[data-ng-click=\"canviAlumne('next')\"]");if(!next||next.hasAttribute("disabled")){sP(prog,"Treball de Síntesi processat! ✓");return;}angular.element(next).triggerHandler('click');i++;run();}},500);});}run();});}
+
+  // ── FUNCIÓ: COMENTARIS + TREBALL DE SÍNTESI ──
+  function o4(){tM();dCTS(function(textC,textT){if(!textC.trim()&&!textT.trim())return;let cm=textC.split("\n");let ts=textT.split("\n");let i=0;let total=Math.max(cm.length,ts.length);let prog=cP("Processant: 0 / "+total);
+  function run(){if(i>=total){sP(prog,"Tot processat! ✓");return;}sP(prog,"Processant: "+(i+1)+" / "+total);
+  posarTS(ts[i]||'');
+  let c=(cm[i]||"").trim();
+  if(c!==""){let oB=_q("a[data-ng-click='showCommentsModal()']");if(!oB){_st(run,500);return;}oB.click();let wM=setInterval(function(){let ta=_q("textarea[data-ng-model='comentariGeneral.comentari']");let sC=_q("a[data-ng-click='saveComentariGeneral()']");if(ta&&sC){clearInterval(wM);ta.value=c;ta.dispatchEvent(new InputEvent("input",{bubbles:true}));sC.click();dP();}},200);}else{dP();}
+  function dP(){_st(function(){let sG=_q("a[data-ng-click='saveNotesAvaluacio()']");if(sG)sG.click();let wS=setInterval(function(){let alerts=_qa(".alert-success");let found=false;alerts.forEach(function(a){if(a.innerText.toLowerCase().includes("desat"))found=true;});if(found){clearInterval(wS);let next=_q("a[data-ng-click=\"canviAlumne('next')\"]");if(!next||next.hasAttribute("disabled")){sP(prog,"Tot processat! ✓");return;}angular.element(next).triggerHandler('click');i++;_st(run,7000);}},500);},2000);}}run();});}
 
   function gInpQ(){
     const q=[...document.querySelectorAll('input[name="quantitativa"]')].filter(el=>el.offsetParent!==null);
@@ -203,11 +326,15 @@ if(isA){
     let b1=_id("btn1");
     let b2=_id("btn2");
     let b3=_id("btn3");
+    let bts=_id("btnTS");
+    let b4=_id("btn4");
     let bi=_id("btnInfo");
     let bx=_id("btnX");
     if(b1)b1.onclick=o1;
     if(b2)b2.onclick=o2;
     if(b3)b3.onclick=o3;
+    if(bts&&teTS)bts.onclick=oTS;
+    if(b4&&teTS)b4.onclick=o4;
     if(bi)bi.onclick=sInfoA;
     if(bx)bx.onclick=tM;
   }
@@ -349,7 +476,39 @@ if(isA){
   function hN(){return gR().some(rN);}
   function hC(){return gR().some(hasComment);}
 
-  // Normalitza textos llargs de qualificació ESO a la sigla que espera el select
+  // ── MÈTODE RÀPID per a comentaris a isBATX ──
+  function aCFastBATX(text,idx2,wM,cb){
+    const cm=text.split('\n').map(s=>s.trim());
+    const rows=gR();
+    const tg=idx2!==null?idx2.map(i=>rows[i]):rows;
+    const sk=[];
+    try{
+      // Cerca el scope pujant nivells des de la taula fins trobar dummyStudents
+      const tbl=_q('table[data-st-table="dummyStudents"]');
+      let scope=tbl?angular.element(tbl).scope():null;
+      let found=null;
+      for(let i=0;i<8&&scope;i++){
+        if(scope.dummyStudents){found=scope;break;}
+        scope=scope.$parent;
+      }
+      const students=found&&found.dummyStudents?found.dummyStudents.filter(a=>!a.esBaixa):null;
+      if(students&&students.length){
+        const tgStudents=idx2!==null?idx2.map(i=>students[i]):students;
+        let applied=0;
+        for(let i=0;i<cm.length&&i<tgStudents.length;i++){
+          const st=tgStudents[i];if(!st)continue;
+          if(wM==='skip'&&hasComment(tg[i])){sk.push(gN(tg[i]));continue;}
+          if(!cm[i])continue;
+          st.comentaris=cm[i];
+          applied++;
+        }
+        if(applied>0){found.$apply();cb(sk);return;}
+      }
+    }catch(e){}
+    // Fallback al mètode lent si el ràpid no ha funcionat
+    aC(text,idx2,wM,cb);
+  }
+
   function nrmESO(v){
     const s=v.trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
     if(s==='na'||s==='no assolit'||s==='no assoliment')return 'NA';
@@ -447,7 +606,8 @@ if(isA){
     if(mode==='notes'||mode==='ambdos'){md.ap(mkLbl('Notes (una per línia, en el mateix ordre que la taula)'));nTA=mkTA('10\n7\n5\n...');md.ap(nTA);}
     if(mode==='comentaris'||mode==='ambdos'){md.ap(mkLbl('Comentaris (un per línia)'));cTA=mkTA('Comentari alumne 1\nComentari alumne 2\n...');md.ap(cTA);}
     const ap=_c('button');ap.textContent=lbls[mode];ap.style.cssText=`width:100%;padding:11px;border:none;border-radius:8px;background:${clrs[mode]};color:#fff;font-size:14px;font-weight:500;cursor:pointer;`;
-    ap.onclick=()=>{const skN=nTA?aN(nTA.value,idx2,wM):[];if(cTA){aC(cTA.value,idx2,wM,skC=>sS(skN,skC));}else{sS(skN,[]);}};
+    // Usa aCFastBATX per als comentaris, amb fallback automàtic
+    ap.onclick=()=>{const skN=nTA?aN(nTA.value,idx2,wM):[];if(cTA){aCFastBATX(cTA.value,idx2,wM,skC=>sS(skN,skC));}else{sS(skN,[]);}};
     md.ap(ap);
   }
   function sPk(mode,wM){
@@ -499,7 +659,7 @@ if(isA){
     const h=_c('p');h.style.cssText='font-weight:500;font-size:18px;margin:0 0 18px;color:#0f0f1a;';h.textContent='ℹ️ Com funciona';md.ap(h);
     function sec(tit,items){const wrap=_c('div');wrap.style.cssText='margin-bottom:16px;';const lbl=_c('p');lbl.style.cssText='font-size:11px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:0.08em;margin:0 0 8px;';lbl.textContent=tit;wrap.ap(lbl);const box=_c('div');box.style.cssText='border-radius:10px;overflow:hidden;border:1px solid #eee;';items.forEach((it,i)=>{const d=_c('div');d.style.cssText='padding:9px 14px;font-size:13px;color:#374151;line-height:1.5;'+(i>0?'border-top:1px solid #f3f4f6;':'');d.innerHTML=it;box.ap(d);});wrap.ap(box);md.ap(wrap);}
     sec('Notes',['📋 Enganxa una nota per alumne, <strong>una per línia</strong>, en el mateix ordre que la taula.','⬜ Per saltar-te un alumne, deixa la línia corresponent en <strong>blanc</strong>.','🔢 Format acceptat: <strong>números</strong> (p.ex. 7, 8.5).']);
-    sec('Comentaris',['💬 Enganxa un comentari per alumne, <strong>un per línia</strong>, en el mateix ordre que la taula.','↵ Cada comentari ha d\'ocupar exactament una sola línia, <strong>sense salts de línia interns</strong>.','⬜ Per saltar-te un alumne, deixa la línia corresponent en <strong>blanc</strong>.']);
+    sec('Comentaris',['💬 Enganxa un comentari per alumne, <strong>un per línia</strong>, en el mateix ordre que la taula.','↵ Cada comentari ha d\'ocupar exactament una sola línia, <strong>sense salts de línia interns</strong>.','⬜ Per saltar-te un alumne, deixa la línia corresponent en <strong>blanc</strong>.','⚡ S\'apliquen a l\'instant sense haver d\'obrir cada alumne individualment.']);
   }
   function sCh(){
     md.innerHTML='';md.ap(mkCtx());
@@ -555,6 +715,39 @@ if(isA){
 
   function hN(){return gR().some(rN);}
   function hC(){return gR().some(rCm);}
+
+  // ── MÈTODE RÀPID per a comentaris a isM ──
+  function aCFast(text,idx2,wM,cb){
+    const cm=text.split('\n').map(s=>s.trim());
+    const rows=gR();
+    const tg=idx2!==null?idx2.map(i=>rows[i]):rows;
+    const sk=[];
+    try{
+      const activeTab=_q('#my-tab-content .tab-pane.active');
+      const scopeBase=activeTab?angular.element(activeTab).scope():null;
+      // Prova vm primer (avaluació parcial), després $parent.$parent (avaluació final ESO)
+      const scopeVm=scopeBase&&scopeBase.vm?scopeBase:null;
+      const scopeParent=scopeBase&&scopeBase.$parent&&scopeBase.$parent.$parent&&scopeBase.$parent.$parent.dummyStudents?scopeBase.$parent.$parent:null;
+      const scope=scopeVm||scopeParent;
+      const vm=scopeVm&&scopeVm.vm;
+      // Amb vm (parcial): filtra per showComments. Sense vm (final ESO): tots els no-baixa.
+      const students=vm&&vm.dummyStudents?vm.dummyStudents.filter(a=>a.showComments&&!a.esBaixa):(scope&&scope.dummyStudents?scope.dummyStudents.filter(a=>!a.esBaixa):null);
+      if(students&&students.length){
+        const tgStudents=idx2!==null?idx2.map(i=>students[i]):students;
+        let applied=0;
+        for(let i=0;i<cm.length&&i<tgStudents.length;i++){
+          const st=tgStudents[i];if(!st)continue;
+          if(wM==='skip'&&rCm(tg[i])){sk.push(gN(tg[i]));continue;}
+          if(!cm[i])continue;
+          st.comentaris=cm[i];
+          applied++;
+        }
+        if(applied>0){(scope||scopeParent||scopeVm).$apply();cb(sk);return;}
+      }
+    }catch(e){}
+    // Fallback al mètode lent si el ràpid no ha funcionat
+    aC(text,idx2,wM,cb);
+  }
 
   function aN(text,idx2,wM){
     const grades=text.split('\n').map(s=>s.split('\t'));
@@ -626,7 +819,16 @@ if(isA){
   function mkTA(ph){const t=_c('textarea');t.placeholder=ph;t.style.cssText='width:100%;height:80px;box-sizing:border-box;border:1px solid #ccc;border-radius:6px;padding:6px 8px;font-size:12px;font-family:monospace;margin-bottom:12px;resize:vertical;';return t;}
   function mkCtx(){const b=_c('div');b.textContent=CTX;b.style.cssText='display:inline-block;background:#f0f4ff;color:#3d6b9e;border:1px solid #c5d5f0;border-radius:20px;padding:3px 10px;font-size:11px;font-weight:500;margin-bottom:14px;';return b;}
   function sS(skN,skC){const allNames=[...new Set([...skN,...skC])];if(!allNames.length){close();return;}md.innerHTML='';const ic=_c('div');ic.textContent='⚠';ic.style.cssText='font-size:26px;margin-bottom:8px;';md.ap(ic);const h=_c('p');h.style.cssText='font-weight:500;font-size:15px;margin:0 0 6px;';h.textContent='Alumnes no modificats';md.ap(h);const setN=new Set(skN);const setC=new Set(skC);const parts=[];if(skN.length)parts.push('notes');if(skC.length)parts.push('comentaris');const sub=_c('p');sub.style.cssText='font-size:13px;color:#666;margin:0 0 12px;line-height:1.5;';sub.textContent=`Els alumnes següents ja tenien ${parts.join(' o ')} i no s'han sobreescrit:`;md.ap(sub);const ul=_c('ul');ul.style.cssText='font-size:13px;margin:0 0 16px;padding-left:18px;line-height:1.9;max-height:200px;overflow-y:auto;';allNames.forEach(name=>{const li=_c('li');const tags=[];if(setN.has(name))tags.push('notes');if(setC.has(name))tags.push('comentaris');li.textContent=`${name} (${tags.join(', ')})`;ul.ap(li);});md.ap(ul);const ok=_c('button');ok.textContent='Tancar';ok.style.cssText='width:100%;padding:11px;border:none;border-radius:8px;background:#555;color:#fff;font-size:14px;font-weight:500;cursor:pointer;';ok.onclick=close;md.ap(ok);}
-  function sF(mode,idx2,wM){md.innerHTML='';md.ap(mkCtx());md.ap(mkBack(()=>idx2===null?sSc(mode,wM):sPk(mode,wM)));let nTA=null,cTA=null;if(mode==='notes'||mode==='ambdos'){md.ap(mkLbl('Notes'));nTA=mkTA("Enganxa les notes des d'Excel");md.ap(nTA);}if(mode==='comentaris'||mode==='ambdos'){md.ap(mkLbl('Comentaris'));cTA=mkTA('Enganxa els comentaris (un per línia)');md.ap(cTA);}const ap=_c('button');ap.textContent=lbls[mode];ap.style.cssText=`width:100%;padding:11px;border:none;border-radius:8px;background:${clrs[mode]};color:#fff;font-size:14px;font-weight:500;cursor:pointer;`;ap.onclick=()=>{const skN=nTA?aN(nTA.value,idx2,wM):[];if(cTA){aC(cTA.value,idx2,wM,skC=>sS(skN,skC));}else{sS(skN,[]);}};md.ap(ap);}
+  function sF(mode,idx2,wM){
+    md.innerHTML='';md.ap(mkCtx());md.ap(mkBack(()=>idx2===null?sSc(mode,wM):sPk(mode,wM)));
+    let nTA=null,cTA=null;
+    if(mode==='notes'||mode==='ambdos'){md.ap(mkLbl('Notes'));nTA=mkTA("Enganxa les notes des d'Excel");md.ap(nTA);}
+    if(mode==='comentaris'||mode==='ambdos'){md.ap(mkLbl('Comentaris'));cTA=mkTA('Enganxa els comentaris (un per línia)');md.ap(cTA);}
+    const ap=_c('button');ap.textContent=lbls[mode];ap.style.cssText=`width:100%;padding:11px;border:none;border-radius:8px;background:${clrs[mode]};color:#fff;font-size:14px;font-weight:500;cursor:pointer;`;
+    // Usa aCFast per als comentaris, amb fallback automàtic
+    ap.onclick=()=>{const skN=nTA?aN(nTA.value,idx2,wM):[];if(cTA){aCFast(cTA.value,idx2,wM,skC=>sS(skN,skC));}else{sS(skN,[]);}};
+    md.ap(ap);
+  }
   function sPk(mode,wM){md.innerHTML='';md.ap(mkCtx());md.ap(mkBack(()=>sSc(mode,wM)));const rows=gR();const h=_c('p');h.textContent='Selecciona els alumnes';h.style.cssText='font-weight:500;font-size:15px;margin:0 0 10px;';md.ap(h);const sr=_c('div');sr.style.cssText='display:flex;gap:8px;margin-bottom:8px;';const sA=_c('button');sA.textContent='Tots';sA.style.cssText='flex:1;padding:5px;border:1px solid #ccc;border-radius:6px;background:transparent;font-size:12px;cursor:pointer;';const sN=_c('button');sN.textContent='Cap';sN.style.cssText='flex:1;padding:5px;border:1px solid #ccc;border-radius:6px;background:transparent;font-size:12px;cursor:pointer;';sr.ap(sA);sr.ap(sN);md.ap(sr);const ld=_c('div');ld.style.cssText='max-height:220px;overflow-y:auto;border:1px solid #eee;border-radius:6px;margin-bottom:12px;';const cbs=[];rows.forEach((row,i)=>{const name=gN(row)||`Alumne ${i+1}`;const item=_c('label');item.style.cssText='display:flex;align-items:center;gap:8px;padding:7px 10px;cursor:pointer;border-bottom:1px solid #f5f5f5;font-size:13px;';const cb=_c('input');cb.type='checkbox';cb.checked=true;cbs.push(cb);item.ap(cb);item.ap(document.createTextNode(name));ld.ap(item);});md.ap(ld);sA.onclick=()=>cbs.forEach(c=>c.checked=true);sN.onclick=()=>cbs.forEach(c=>c.checked=false);const ap=_c('button');ap.textContent='Continuar';ap.style.cssText=`width:100%;padding:11px;border:none;border-radius:8px;background:${clrs[mode]};color:#fff;font-size:14px;font-weight:500;cursor:pointer;`;ap.onclick=()=>{const idx=cbs.map((c,i)=>c.checked?i:null).filter(i=>i!==null);if(!idx.length)return;sF(mode,idx,wM);};md.ap(ap);}
   function sSc(mode,wM){md.innerHTML='';md.ap(mkCtx());md.ap(mkBack(sCh));const h=_c('p');h.textContent='A quins alumnes?';h.style.cssText='font-weight:500;font-size:16px;margin:0 0 16px;';md.ap(h);md.ap(mkBtn('Tots els alumnes del grup',clrs[mode],()=>sF(mode,null,wM)));md.ap(mkBtn('Escollir alumnes','#888',()=>sPk(mode,wM)));}
   function sW(msg,mode){md.innerHTML='';md.ap(mkCtx());md.ap(mkBack(sCh));const ic=_c('div');ic.textContent='⚠';ic.style.cssText='font-size:28px;margin-bottom:8px;';md.ap(ic);const h=_c('p');h.style.cssText='font-weight:500;font-size:15px;margin:0 0 8px;';h.textContent='Ja hi ha dades existents';md.ap(h);const s=_c('p');s.style.cssText='font-size:13px;color:#666;margin:0 0 16px;line-height:1.5;';s.textContent=msg;md.ap(s);md.ap(mkBtn('Reescriure tot','#c0392b',()=>sSc(mode,'overwrite')));md.ap(mkBtn('No sobreescriure els que ja en tienen','#e67e22',()=>sSc(mode,'skip')));md.ap(mkCancel('Cancel·lar',close));}
@@ -636,7 +838,7 @@ if(isA){
     const h=_c('p');h.style.cssText='font-weight:500;font-size:18px;margin:0 0 18px;color:#0f0f1a;';h.textContent='ℹ️ Com funciona';md.ap(h);
     function sec(tit,items){const wrap=_c('div');wrap.style.cssText='margin-bottom:16px;';const lbl=_c('p');lbl.style.cssText='font-size:11px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:0.08em;margin:0 0 8px;';lbl.textContent=tit;wrap.ap(lbl);const box=_c('div');box.style.cssText='border-radius:10px;overflow:hidden;border:1px solid #eee;';items.forEach((it,i)=>{const d=_c('div');d.style.cssText='padding:9px 14px;font-size:13px;color:#374151;line-height:1.5;'+(i>0?'border-top:1px solid #f3f4f6;':'');d.innerHTML=it;box.ap(d);});wrap.ap(box);md.ap(wrap);}
     sec('Notes ESO',['📋 Enganxa una nota per alumne, <strong>una per línia</strong>, en el mateix ordre que la taula. Pots enganxar directament des d\'Excel.','⬜ Per saltar-te un alumne, deixa la línia corresponent en <strong>blanc</strong>.','🔤 Formats acceptats: <strong>NA, AS, AN, AE</strong> &mdash; o el text complet: <strong>No assolit, Satisfactori, Notable, Excel&middot;lent</strong> &mdash; o també: <strong>No Assoliment, Assoliment Satisfactori, Assoliment Notable, Assoliment Excel&middot;lent</strong>.']);
-    sec('Comentaris',['💬 Enganxa un comentari per alumne, <strong>un per línia</strong>, en el mateix ordre que la taula.','↵ Cada comentari ha d\'ocupar exactament una sola línia, <strong>sense salts de línia interns</strong>.','⬜ Per saltar-te un alumne, deixa la línia corresponent en <strong>blanc</strong>.']);
+    sec('Comentaris',['💬 Enganxa un comentari per alumne, <strong>un per línia</strong>, en el mateix ordre que la taula.','↵ Cada comentari ha d\'ocupar exactament una sola línia, <strong>sense salts de línia interns</strong>.','⬜ Per saltar-te un alumne, deixa la línia corresponent en <strong>blanc</strong>.','⚡ S\'apliquen a l\'instant sense haver d\'obrir cada alumne individualment.']);
   }
   function sCh(){md.innerHTML='';md.ap(mkCtx());const h=_c('p');h.style.cssText='font-weight:500;font-size:16px;margin:0 0 16px;';h.textContent='Què vols fer?';md.ap(h);md.ap(mkBtn('Posar notes','#4e7f4e',()=>cAS('notes')));md.ap(mkBtn('Posar comentaris','#3d6b9e',()=>cAS('comentaris')));md.ap(mkBtn('Posar notes i comentaris','#7a4e9e',()=>cAS('ambdos')));const biM=_c('button');biM.textContent='ℹ️ Com funciona';biM.style.cssText='width:100%;padding:9px;border:1.5px solid #e5e7eb;border-radius:8px;background:transparent;font-size:13px;cursor:pointer;color:#6b7280;margin-top:4px;';biM.onclick=sInfoM;md.ap(biM);md.ap(mkCancel());const cr=_c('p');cr.textContent='© 2026 Ignasi Martí Palet';cr.style.cssText='font-size:11px;color:#9ca3af;text-align:center;margin-top:14px;margin-bottom:0';md.ap(cr);}
   sCh();ov.ap(md);_ba(ov);
