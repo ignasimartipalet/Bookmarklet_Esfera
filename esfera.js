@@ -69,6 +69,26 @@ if(isA){
     return false;
   }
 
+  // ── DETECCIÓ RESUM D'AVALUACIÓ ──
+  function gBotoResumAvaluacio(){
+    const titols=_qa('h4.panel-title');
+    for(const h4 of titols){
+      if((h4.textContent||'').trim().toLowerCase().includes('resum d\'avaluació')||
+         (h4.textContent||'').trim().toLowerCase().includes("resum d'avaluacio")||
+         (h4.textContent||'').trim().toLowerCase().includes('resum d\u2019avaluaci\u00f3')){
+        // Cerca l'element clicable pare (a o div amb ng-click o rol panel-heading)
+        let el=h4.parentElement;
+        while(el&&el!==document.body){
+          if(el.tagName==='A'||el.getAttribute('data-ng-click')||el.getAttribute('ng-click')||el.classList.contains('panel-heading')){return el;}
+          el=el.parentElement;
+        }
+        return h4.parentElement;
+      }
+    }
+    return null;
+  }
+  const teResumAvaluacio=!!gBotoResumAvaluacio();
+
   function cO(html,tancarFn){let ov=_c('div');ov.style.cssText='position:fixed;inset:0;background:rgba(10,10,20,0.5);backdrop-filter:blur(6px);z-index:999999;display:flex;align-items:center;justify-content:center';let box=_c('div');box.style.cssText=F+'background:#fff;border-radius:20px;padding:36px;min-width:360px;max-width:min(92vw,520px);box-shadow:0 32px 80px rgba(0,0,0,0.18),0 2px 8px rgba(0,0,0,0.06);animation:tutorFadeIn 0.22s ease';box.innerHTML=html;ov.ap(box);_ba(ov);if(tancarFn)ov.addEventListener('click',e=>{if(e.target===ov)tancarFn(ov);});return ov;}
   function cP(text){let d=_c('div');d.style.cssText=F+'position:fixed;top:20px;right:20px;padding:12px 20px;background:#0f0f1a;color:#fff;font-size:13px;font-weight:500;border-radius:100px;z-index:999998;box-shadow:0 8px 28px rgba(0,0,0,0.22);display:flex;align-items:center;gap:10px';d.innerHTML='<span style="width:8px;height:8px;border-radius:50%;background:#4ade80;display:inline-block;animation:tutorPulse 1.2s infinite"></span><span id="tutorProgressText">'+text+'</span>';_ba(d);return d;}
   function sP(prog,t){let el=prog.querySelector('#tutorProgressText');if(el)el.textContent=t;}
@@ -123,7 +143,7 @@ if(isA){
     const sel=gTSSelect();
     if(!sel)return false;
     const v=normalitzaTS(val);
-    if(!v)return true; // buit o invàlid → es deixa sense canviar
+    if(!v)return true;
     const opt=Array.from(sel.options).find(o=>o.value==='string:'+v);
     if(!opt)return false;
     sel.value=opt.value;
@@ -185,14 +205,36 @@ if(isA){
     },100);
   }
 
+  // ── DIÀLEG CONSELL ORIENTADOR ──
+  function dCO(callback){
+    let html='<div style="'+F+'text-align:center">'
+      +'<div style="width:52px;height:52px;background:#0f0f1a;border-radius:16px;display:inline-flex;align-items:center;justify-content:center;font-size:26px;margin-bottom:16px">🧭</div>'
+      +'<h2 style="'+F+'margin:0 0 6px;font-size:21px;font-weight:700;color:#0f0f1a">Consell orientador</h2>'
+      +'<p style="'+F+'margin:0 0 20px;font-size:13px;color:#9ca3af">Enganxa els consells (un per alumne)</p>'
+      +'<textarea id="tutorTAco" placeholder="Consell alumne 1&#10;Consell alumne 2&#10;Consell alumne 3&#10;..." style="'+F+'width:100%;height:160px;border:1.5px solid #e5e7eb;border-radius:12px;padding:14px;font-size:13px;color:#0f0f1a;resize:vertical;outline:none;line-height:1.6"></textarea>'
+      +'<div style="display:flex;gap:10px;margin-top:16px">'
+      +'<button id="btnCancelCO" style="'+F+'flex:1;padding:13px;font-size:14px;font-weight:600;border:1.5px solid #e5e7eb;border-radius:12px;background:transparent;color:#9ca3af;cursor:pointer">Cancel·lar</button>'
+      +'<button id="btnOkCO" style="'+F+'flex:2;padding:13px;font-size:14px;font-weight:600;border:none;border-radius:12px;background:#0f0f1a;color:#fff;cursor:pointer">Continuar →</button>'
+      +'</div></div>';
+    let ov=cO(html,null);
+    _st(()=>{
+      let ta=_id('tutorTAco');if(ta)ta.focus();
+      let ok=_id('btnOkCO');if(ok)ok.onclick=()=>{let val=ta?ta.value:'';if(ov.parentNode)_rm(ov);callback(val);};
+      let ca=_id('btnCancelCO');if(ca)ca.onclick=()=>{if(ov.parentNode)_rm(ov);};
+    },100);
+  }
+
   const btnTSStyle=(teTS
     ?''+F+'padding:14px 20px;font-size:14px;font-weight:600;border:none;border-radius:12px;background:#0f0f1a;color:#fff;cursor:pointer;display:flex;align-items:center;gap:12px'
     :''+F+'padding:14px 20px;font-size:14px;font-weight:600;border:none;border-radius:12px;background:#d1d5db;color:#9ca3af;cursor:not-allowed;display:flex;align-items:center;gap:12px');
   const btn4Style=(teTS
     ?''+F+'padding:14px 20px;font-size:14px;font-weight:600;border:2px solid #0f0f1a;border-radius:12px;background:#fff;color:#0f0f1a;cursor:pointer;display:flex;align-items:center;gap:12px'
     :''+F+'padding:14px 20px;font-size:14px;font-weight:600;border:2px solid #d1d5db;border-radius:12px;background:#fff;color:#9ca3af;cursor:not-allowed;display:flex;align-items:center;gap:12px');
+  const btnCOStyle=(teResumAvaluacio
+    ?''+F+'padding:14px 20px;font-size:14px;font-weight:600;border:2px solid #0f0f1a;border-radius:12px;background:#fff;color:#0f0f1a;cursor:pointer;display:flex;align-items:center;gap:12px'
+    :''+F+'padding:14px 20px;font-size:14px;font-weight:600;border:2px solid #d1d5db;border-radius:12px;background:#fff;color:#9ca3af;cursor:not-allowed;display:flex;align-items:center;gap:12px');
 
-  let mH='<div style="'+F+'text-align:center"><div style="width:52px;height:52px;background:#0f0f1a;border-radius:16px;display:inline-flex;align-items:center;justify-content:center;font-size:26px;margin-bottom:16px">🎓</div><h2 style="'+F+'margin:0 0 6px;font-size:21px;font-weight:700;color:#0f0f1a">Eina de Tutoria'+(batxAmbInputs?' (batxillerat)':'')+'</h2><p style="'+F+'margin:0 0 28px;font-size:13px;color:#9ca3af">Selecciona l\'acció que vols executar</p><div style="display:flex;flex-direction:column;gap:10px"><button id="btn1" style="'+F+'padding:14px 20px;font-size:14px;font-weight:600;border:none;border-radius:12px;background:#0f0f1a;color:#fff;cursor:pointer;display:flex;align-items:center;gap:12px">💬<span>Comentaris de tutor</span></button><button id="btnTS" style="'+btnTSStyle+'">📝<span>Treball de Síntesi</span>'+(teTS?'':'<span style="font-size:11px;margin-left:auto;color:#9ca3af">No disponible</span>')+'</button><button id="btn2" style="'+F+'padding:14px 20px;font-size:14px;font-weight:600;border:none;border-radius:12px;background:#0f0f1a;color:#fff;cursor:pointer;display:flex;align-items:center;gap:12px">📋<span>Acta de tutoria</span></button><button id="btn4" style="'+btn4Style+'">⚡<span>Comentaris + Treball de Síntesi</span>'+(teTS?'':'<span style="font-size:11px;margin-left:auto;color:#9ca3af">No disponible</span>')+'</button><button id="btn3" style="'+F+'padding:14px 20px;font-size:14px;font-weight:600;border:2px solid #0f0f1a;border-radius:12px;background:#fff;color:#0f0f1a;cursor:pointer;display:flex;align-items:center;gap:12px">⚡<span>Comentaris + Acta a la vegada</span></button><button id="btnInfo" style="'+F+'padding:10px 20px;font-size:13px;font-weight:500;border:1.5px solid #e5e7eb;border-radius:12px;background:transparent;color:#6b7280;cursor:pointer;margin-top:2px">ℹ️ Com funciona</button><button id="btnX" style="'+F+'padding:10px 20px;font-size:13px;font-weight:500;border:1.5px solid #e5e7eb;border-radius:12px;background:transparent;color:#9ca3af;cursor:pointer;margin-top:2px">Cancel·lar</button><p style="font-size:11px;color:#9ca3af;text-align:center;margin-top:14px;margin-bottom:0">© 2026 Ignasi Martí Palet</p><div></div>';
+  let mH='<div style="'+F+'text-align:center"><div style="width:52px;height:52px;background:#0f0f1a;border-radius:16px;display:inline-flex;align-items:center;justify-content:center;font-size:26px;margin-bottom:16px">🎓</div><h2 style="'+F+'margin:0 0 6px;font-size:21px;font-weight:700;color:#0f0f1a">Eina de Tutoria'+(batxAmbInputs?' (batxillerat)':'')+'</h2><p style="'+F+'margin:0 0 28px;font-size:13px;color:#9ca3af">Selecciona l\'acció que vols executar</p><div style="display:flex;flex-direction:column;gap:10px"><button id="btn1" style="'+F+'padding:14px 20px;font-size:14px;font-weight:600;border:none;border-radius:12px;background:#0f0f1a;color:#fff;cursor:pointer;display:flex;align-items:center;gap:12px">💬<span>Comentaris de tutor</span></button><button id="btnTS" style="'+btnTSStyle+'">📝<span>Treball de Síntesi</span>'+(teTS?'':'<span style="font-size:11px;margin-left:auto;color:#9ca3af">No disponible</span>')+'</button><button id="btn2" style="'+F+'padding:14px 20px;font-size:14px;font-weight:600;border:none;border-radius:12px;background:#0f0f1a;color:#fff;cursor:pointer;display:flex;align-items:center;gap:12px">📋<span>Acta de tutoria</span></button><button id="btn4" style="'+btn4Style+'">⚡<span>Comentaris + Treball de Síntesi</span>'+(teTS?'':'<span style="font-size:11px;margin-left:auto;color:#9ca3af">No disponible</span>')+'</button><button id="btn3" style="'+F+'padding:14px 20px;font-size:14px;font-weight:600;border:2px solid #0f0f1a;border-radius:12px;background:#fff;color:#0f0f1a;cursor:pointer;display:flex;align-items:center;gap:12px">⚡<span>Comentaris + Acta a la vegada</span></button><button id="btnCO" style="'+btnCOStyle+'">🧭<span>Consell orientador</span>'+(teResumAvaluacio?'':'<span style="font-size:11px;margin-left:auto;color:#9ca3af">No disponible</span>')+'</button><button id="btnInfo" style="'+F+'padding:10px 20px;font-size:13px;font-weight:500;border:1.5px solid #e5e7eb;border-radius:12px;background:transparent;color:#6b7280;cursor:pointer;margin-top:2px">ℹ️ Com funciona</button><button id="btnX" style="'+F+'padding:10px 20px;font-size:13px;font-weight:500;border:1.5px solid #e5e7eb;border-radius:12px;background:transparent;color:#9ca3af;cursor:pointer;margin-top:2px">Cancel·lar</button><p style="font-size:11px;color:#9ca3af;text-align:center;margin-top:14px;margin-bottom:0">© 2026 Ignasi Martí Palet</p><div></div>';
   let mO=cO(mH,o=>_rm(o));
   function tM(){if(mO.parentNode)_rm(mO);}
 
@@ -206,6 +248,7 @@ if(isA){
       +sec('Comentaris de tutor',['💬 Enganxa un comentari per alumne, <strong>un per línia</strong>, en el mateix ordre que apareixen a la pantalla.','↵ Cada comentari ha d\'ocupar exactament una sola línia, <strong>sense salts de línia interns</strong>.','⬜ Per saltar-te un alumne, deixa la línia corresponent en <strong>blanc</strong>.'])
       +sec('Treball de Síntesi',['📝 Enganxa una nota per alumne, <strong>una per línia</strong>.','✅ Formats acceptats: <strong>FA, FT, NF</strong> o el text complet: <strong>Fet amb aprofitament, Fet, No fet</strong>.','⬜ Per saltar-te un alumne, deixa la línia corresponent en <strong>blanc</strong>.','⚠️ Disponible només si la matèria Treball de Síntesi apareix a la pantalla.'])
       +sec('Acta de tutoria',['📋 Recorre tots els alumnes automàticament i genera un resum de suspesos per matèria i per alumne.','▶️ No cal enganxar res: simplement prem el botó i espera que acabi.'])
+      +sec('Consell orientador',['🧭 Enganxa un consell per alumne, <strong>un per línia</strong>, en el mateix ordre que apareixen a la pantalla.','↵ Cada consell ha d\'ocupar exactament una sola línia, <strong>sense salts de línia interns</strong>.','⬜ Per saltar-te un alumne, deixa la línia corresponent en <strong>blanc</strong>.','⚠️ Disponible només si apareix el panell <strong>Resum d\'avaluació</strong> a la pantalla.'])
       +'</div>';
     _st(()=>{const b=_id('btnInfoBack');if(b)b.onclick=()=>{box.innerHTML=mH;_st(bindTutoriaButtons,50);};},50);
   }
@@ -233,6 +276,106 @@ if(isA){
   let c=(cm[i]||"").trim();
   if(c!==""){let oB=_q("a[data-ng-click='showCommentsModal()']");if(!oB){_st(run,500);return;}oB.click();let wM=setInterval(function(){let ta=_q("textarea[data-ng-model='comentariGeneral.comentari']");let sC=_q("a[data-ng-click='saveComentariGeneral()']");if(ta&&sC){clearInterval(wM);ta.value=c;ta.dispatchEvent(new InputEvent("input",{bubbles:true}));sC.click();dP();}},200);}else{dP();}
   function dP(){_st(function(){let sG=_q("a[data-ng-click='saveNotesAvaluacio()']");if(sG)sG.click();let wS=setInterval(function(){let alerts=_qa(".alert-success");let found=false;alerts.forEach(function(a){if(a.innerText.toLowerCase().includes("desat"))found=true;});if(found){clearInterval(wS);let next=_q("a[data-ng-click=\"canviAlumne('next')\"]");if(!next||next.hasAttribute("disabled")){sP(prog,"Tot processat! ✓");return;}angular.element(next).triggerHandler('click');i++;_st(run,7000);}},500);},2000);}}run();});}
+
+  // ── FUNCIÓ: CONSELL ORIENTADOR ──
+  function oCO(){
+    tM();
+    dCO(function(text){
+      if(!text.trim())return;
+      let co=text.split("\n");
+      let i=0;
+      let prog=cP("Consell orientador: 0 / "+co.length);
+
+      function esperaResumObert(cb){
+        // Espera que el textarea del consell orientador sigui visible
+        let intents=0;
+        let int=setInterval(()=>{
+          const ta=_q("textarea[data-ng-model='qualificacions.lAvaluacions[tabactive].consellOrientador']");
+          if(ta&&ta.offsetParent!==null){clearInterval(int);cb(ta);}
+          intents++;
+          if(intents>40){clearInterval(int);cb(null);}
+        },150);
+      }
+
+      function asseguraResumObert(cb){
+        // Comprova si el textarea ja és visible
+        const ta=_q("textarea[data-ng-model='qualificacions.lAvaluacions[tabactive].consellOrientador']");
+        if(ta&&ta.offsetParent!==null){cb(ta);return;}
+        // Si no, clica el botó Resum d'avaluació per obrir-lo
+        const boto=gBotoResumAvaluacio();
+        if(!boto){cb(null);return;}
+        boto.click();
+        esperaResumObert(cb);
+      }
+
+      function run(){
+        if(i>=co.length){sP(prog,"Consell orientador processat! ✓");return;}
+        sP(prog,"Consell orientador: "+(i+1)+" / "+co.length);
+
+        asseguraResumObert(function(ta){
+          if(!ta){
+            // No s'ha pogut obrir el resum, passem al següent
+            i++;
+            _st(run,500);
+            return;
+          }
+
+          const c=(co[i]||"").trim();
+
+          if(c!==""){
+            // Escriu el consell via Angular per assegurar el binding
+            try{
+              const scope=angular.element(ta).scope();
+              if(scope){
+                scope.$apply(function(){
+                  // Navega per l'objecte qualificacions.lAvaluacions[tabactive].consellOrientador
+                  if(scope.qualificacions&&scope.qualificacions.lAvaluacions&&scope.tabactive!==undefined){
+                    scope.qualificacions.lAvaluacions[scope.tabactive].consellOrientador=c;
+                    if(typeof scope.marcarCanviResum==='function')scope.marcarCanviResum();
+                  }
+                });
+              }
+            }catch(e){
+              // Fallback: escriu directament i dispara esdeveniments
+              ta.value=c;
+              ta.dispatchEvent(new InputEvent("input",{bubbles:true}));
+              ta.dispatchEvent(new Event("change",{bubbles:true}));
+            }
+          }
+
+          // Desa
+          _st(function(){
+            let sG=_q("a[data-ng-click='saveNotesAvaluacio()']");
+            if(sG)sG.click();
+            let wS=setInterval(function(){
+              let alerts=_qa(".alert-success");
+              let found=false;
+              alerts.forEach(function(a){if(a.innerText.toLowerCase().includes("desat"))found=true;});
+              if(found){
+                clearInterval(wS);
+                let next=_q("a[data-ng-click=\"canviAlumne('next')\"]");
+                if(!next||next.hasAttribute("disabled")){
+                  sP(prog,"Consell orientador processat! ✓");
+                  return;
+                }
+                angular.element(next).triggerHandler('click');
+                i++;
+                let wC_gone=setInterval(function(){
+                  if(!gBotoResumAvaluacio()){
+                    clearInterval(wC_gone);
+                    let wC_back=setInterval(function(){
+                      if(gBotoResumAvaluacio()){clearInterval(wC_back);_st(run,500);}
+                    },200);
+                  }
+                },100);
+              }
+            },500);
+          },1500);
+        });
+      }
+      run();
+    });
+  }
 
   function gInpQ(){
     const q=[...document.querySelectorAll('input[name="quantitativa"]')].filter(el=>el.offsetParent!==null);
@@ -328,6 +471,7 @@ if(isA){
     let b3=_id("btn3");
     let bts=_id("btnTS");
     let b4=_id("btn4");
+    let bco=_id("btnCO");
     let bi=_id("btnInfo");
     let bx=_id("btnX");
     if(b1)b1.onclick=o1;
@@ -335,6 +479,7 @@ if(isA){
     if(b3)b3.onclick=o3;
     if(bts&&teTS)bts.onclick=oTS;
     if(b4&&teTS)b4.onclick=o4;
+    if(bco&&teResumAvaluacio)bco.onclick=oCO;
     if(bi)bi.onclick=sInfoA;
     if(bx)bx.onclick=tM;
   }
@@ -355,7 +500,6 @@ if(isA){
   const titol=esGeneral?'Comentaris de tutor':'Consell orientador';
   const emoji=esGeneral?'💬':'🧭';
 
-  // Recull totes les textareas rellevants (parelles: posicions parells=consell, imparells=general)
   const textareasTots=Array.from(document.querySelectorAll('textarea')).filter((_,i)=>esGeneral?i%2===1:i%2===0);
   const ambContingut=textareasTots.filter(ta=>ta.value.trim()!=='').length;
 
@@ -371,7 +515,6 @@ if(isA){
     return ov;
   }
 
-  // Avís si ja hi ha contingut
   const avisHTML=ambContingut>0
     ?'<div style="'+F+'background:#fff8e1;border:1.5px solid #f5a623;border-radius:12px;padding:12px 16px;margin-bottom:20px;display:flex;gap:10px;align-items:flex-start">'
       +'<span style="font-size:16px;line-height:1.4">⚠️</span>'
@@ -379,7 +522,6 @@ if(isA){
       +'</div>'
     :'';
 
-  // Comptador en viu
   const litMainHTML=''
     +'<div style="'+F+'">'
     +'<div style="text-align:center;margin-bottom:24px">'
@@ -476,14 +618,12 @@ if(isA){
   function hN(){return gR().some(rN);}
   function hC(){return gR().some(hasComment);}
 
-  // ── MÈTODE RÀPID per a comentaris a isBATX ──
   function aCFastBATX(text,idx2,wM,cb){
     const cm=text.split('\n').map(s=>s.trim());
     const rows=gR();
     const tg=idx2!==null?idx2.map(i=>rows[i]):rows;
     const sk=[];
     try{
-      // Cerca el scope pujant nivells des de la taula fins trobar dummyStudents
       const tbl=_q('table[data-st-table="dummyStudents"]');
       let scope=tbl?angular.element(tbl).scope():null;
       let found=null;
@@ -505,7 +645,6 @@ if(isA){
         if(applied>0){found.$apply();cb(sk);return;}
       }
     }catch(e){}
-    // Fallback al mètode lent si el ràpid no ha funcionat
     aC(text,idx2,wM,cb);
   }
 
@@ -606,7 +745,6 @@ if(isA){
     if(mode==='notes'||mode==='ambdos'){md.ap(mkLbl('Notes (una per línia, en el mateix ordre que la taula)'));nTA=mkTA('10\n7\n5\n...');md.ap(nTA);}
     if(mode==='comentaris'||mode==='ambdos'){md.ap(mkLbl('Comentaris (un per línia)'));cTA=mkTA('Comentari alumne 1\nComentari alumne 2\n...');md.ap(cTA);}
     const ap=_c('button');ap.textContent=lbls[mode];ap.style.cssText=`width:100%;padding:11px;border:none;border-radius:8px;background:${clrs[mode]};color:#fff;font-size:14px;font-weight:500;cursor:pointer;`;
-    // Usa aCFastBATX per als comentaris, amb fallback automàtic
     ap.onclick=()=>{const skN=nTA?aN(nTA.value,idx2,wM):[];if(cTA){aCFastBATX(cTA.value,idx2,wM,skC=>sS(skN,skC));}else{sS(skN,[]);}};
     md.ap(ap);
   }
@@ -716,7 +854,6 @@ if(isA){
   function hN(){return gR().some(rN);}
   function hC(){return gR().some(rCm);}
 
-  // ── MÈTODE RÀPID per a comentaris a isM ──
   function aCFast(text,idx2,wM,cb){
     const cm=text.split('\n').map(s=>s.trim());
     const rows=gR();
@@ -725,12 +862,10 @@ if(isA){
     try{
       const activeTab=_q('#my-tab-content .tab-pane.active');
       const scopeBase=activeTab?angular.element(activeTab).scope():null;
-      // Prova vm primer (avaluació parcial), després $parent.$parent (avaluació final ESO)
       const scopeVm=scopeBase&&scopeBase.vm?scopeBase:null;
       const scopeParent=scopeBase&&scopeBase.$parent&&scopeBase.$parent.$parent&&scopeBase.$parent.$parent.dummyStudents?scopeBase.$parent.$parent:null;
       const scope=scopeVm||scopeParent;
       const vm=scopeVm&&scopeVm.vm;
-      // Amb vm (parcial): filtra per showComments. Sense vm (final ESO): tots els no-baixa.
       const students=vm&&vm.dummyStudents?vm.dummyStudents.filter(a=>a.showComments&&!a.esBaixa):(scope&&scope.dummyStudents?scope.dummyStudents.filter(a=>!a.esBaixa):null);
       if(students&&students.length){
         const tgStudents=idx2!==null?idx2.map(i=>students[i]):students;
@@ -745,7 +880,6 @@ if(isA){
         if(applied>0){(scope||scopeParent||scopeVm).$apply();cb(sk);return;}
       }
     }catch(e){}
-    // Fallback al mètode lent si el ràpid no ha funcionat
     aC(text,idx2,wM,cb);
   }
 
@@ -825,7 +959,6 @@ if(isA){
     if(mode==='notes'||mode==='ambdos'){md.ap(mkLbl('Notes'));nTA=mkTA("Enganxa les notes des d'Excel");md.ap(nTA);}
     if(mode==='comentaris'||mode==='ambdos'){md.ap(mkLbl('Comentaris'));cTA=mkTA('Enganxa els comentaris (un per línia)');md.ap(cTA);}
     const ap=_c('button');ap.textContent=lbls[mode];ap.style.cssText=`width:100%;padding:11px;border:none;border-radius:8px;background:${clrs[mode]};color:#fff;font-size:14px;font-weight:500;cursor:pointer;`;
-    // Usa aCFast per als comentaris, amb fallback automàtic
     ap.onclick=()=>{const skN=nTA?aN(nTA.value,idx2,wM):[];if(cTA){aCFast(cTA.value,idx2,wM,skC=>sS(skN,skC));}else{sS(skN,[]);}};
     md.ap(ap);
   }
