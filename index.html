@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>🎓 Assistent Esfer@</title>
+<style>
+  :root {
+    --bg: #f6f7f9;
+    --surface: #ffffff;
+    --text: #1d2330;
+    --muted: #5b6475;
+    --line: #dde1e8;
+    --accent: #2457d6;
+    --accent-text: #ffffff;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #12151c;
+      --surface: #1a1f29;
+      --text: #e8ebf1;
+      --muted: #9aa3b5;
+      --line: #2b3240;
+      --accent: #6b94ff;
+      --accent-text: #0e1320;
+      color-scheme: dark;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    line-height: 1.6;
+    padding: 24px 16px 48px;
+  }
+  main {
+    max-width: 620px;
+    margin: 6vh auto 0;
+  }
+  h1 { font-size: 1.9rem; margin: 0 0 8px; line-height: 1.2; }
+  p { margin: 0 0 16px; color: var(--muted); }
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 28px 24px;
+    margin: 28px 0;
+    text-align: center;
+  }
+  .bookmarklet {
+    display: inline-block;
+    background: var(--accent);
+    color: var(--accent-text);
+    font-weight: 600;
+    font-size: 1.1rem;
+    padding: 14px 28px;
+    border-radius: 10px;
+    text-decoration: none;
+    cursor: grab;
+    user-select: none;
+    box-shadow: 0 2px 0 rgba(0,0,0,.18);
+  }
+  .bookmarklet:active { cursor: grabbing; }
+  .bookmarklet:focus-visible, button:focus-visible, textarea:focus-visible {
+    outline: 3px solid var(--accent);
+    outline-offset: 3px;
+  }
+  .hint { margin: 16px 0 0; font-size: .95rem; }
+  h2 { font-size: 1.1rem; margin: 32px 0 8px; }
+  ol { margin: 0 0 16px; padding-left: 1.3rem; color: var(--muted); }
+  ol li { margin-bottom: 6px; }
+  strong { color: var(--text); }
+  textarea {
+    width: 100%;
+    height: 110px;
+    resize: vertical;
+    font-family: ui-monospace, Menlo, Consolas, monospace;
+    font-size: .8rem;
+    padding: 10px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--surface);
+    color: var(--text);
+  }
+  button {
+    margin-top: 10px;
+    font: inherit;
+    font-weight: 600;
+    padding: 9px 18px;
+    border-radius: 8px;
+    border: 1px solid var(--line);
+    background: var(--surface);
+    color: var(--text);
+    cursor: pointer;
+  }
+  button:hover { border-color: var(--accent); }
+  .notice {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-left: 4px solid #d98b00;
+    border-radius: 8px;
+    padding: 14px 16px;
+    margin: 12px 0 0;
+    font-size: .95rem;
+    color: var(--text);
+  }
+  .sep { margin-top: 48px; font-size: 1.4rem; }
+  h3 { font-size: 1rem; margin: 20px 0 8px; }
+  .fb { margin-bottom: 20px; }
+  .fb label { display: block; font-weight: 600; margin-bottom: 6px; font-size: .95rem; }
+  .mock-wrap { margin: 20px 0 8px; }
+  .mock {
+    max-width: 480px; margin: 0 auto; background: #fff; color: #0f0f1a;
+    border-radius: 20px; padding: 26px 24px 18px;
+    box-shadow: 0 18px 50px rgba(0,0,0,.2), 0 2px 8px rgba(0,0,0,.08);
+    font-family: 'Outfit', system-ui, sans-serif; font-size: 13px; line-height: 1.5;
+    color-scheme: light;
+  }
+  .mock * { box-sizing: border-box; }
+  .mock .hd { text-align: center; margin-bottom: 16px; }
+  .mock .ic { width: 46px; height: 46px; background: #0f0f1a; border-radius: 14px; display: inline-flex; align-items: center; justify-content: center; font-size: 23px; margin-bottom: 10px; }
+  .mock h4 { margin: 0 0 3px; font-size: 19px; font-weight: 700; }
+  .mock .sub { margin: 0 0 8px; color: #9ca3af; }
+  .mock .badge { display: inline-block; background: #f0f4ff; color: #3d6b9e; border: 1px solid #c5d5f0; border-radius: 20px; padding: 2px 10px; font-size: 11px; font-weight: 500; }
+  .mock .lb { margin: 0 0 6px; font-size: 11px; font-weight: 700; color: #9ca3af; text-transform: uppercase; letter-spacing: .08em; }
+  .mock .blk { position: relative; }
+  .mock .ta { border: 1.5px solid #e5e7eb; border-radius: 12px; padding: 12px 14px; height: 92px; line-height: 1.7; white-space: nowrap; overflow: hidden; }
+  .mock .ta i { color: #c0c4cc; font-style: normal; }
+  .mock .cnt { color: #9ca3af; font-size: 12px; margin: 5px 0 12px; }
+  .mock .row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 7px; }
+  .mock .sm { padding: 3px 10px; font-size: 12px; font-weight: 600; border: 1.5px solid #e5e7eb; border-radius: 8px; color: #6b7280; margin-left: 6px; }
+  .mock .gl { border: 1px solid #f0f0f0; border-radius: 12px; }
+  .mock .g { display: flex; align-items: center; gap: 10px; padding: 8px 14px; }
+  .mock .g + .g { border-top: 1px solid #f3f4f6; }
+  .mock .g small { color: #9ca3af; font-size: 12px; }
+  .mock .cb { width: 15px; height: 15px; border-radius: 4px; border: 1.5px solid #9ca3af; flex: none; }
+  .mock .cb.on { background: #0f0f1a; border-color: #0f0f1a; position: relative; }
+  .mock .cb.on::after { content: ''; position: absolute; left: 4px; top: 1px; width: 4px; height: 8px; border: solid #fff; border-width: 0 2px 2px 0; transform: rotate(45deg); }
+  .mock .dry { display: flex; align-items: center; gap: 10px; margin-top: 12px; padding: 10px 14px; border: 1.5px solid #e5e7eb; border-radius: 12px; color: #374151; }
+  .mock .btns { display: flex; gap: 10px; margin-top: 12px; }
+  .mock .b1 { flex: 1; text-align: center; padding: 11px; font-weight: 600; font-size: 14px; border: 1.5px solid #e5e7eb; border-radius: 12px; color: #9ca3af; }
+  .mock .b2 { flex: 2; position: relative; text-align: center; padding: 11px; font-weight: 600; font-size: 14px; border-radius: 12px; background: #0f0f1a; color: #fff; }
+  .mock .b3 { margin-top: 10px; text-align: center; padding: 9px; font-size: 13px; font-weight: 500; border: 1.5px solid #e5e7eb; border-radius: 12px; color: #6b7280; }
+  .mock .cr { text-align: center; color: #9ca3af; font-size: 11px; margin: 12px 0 0; }
+  .mk { position: absolute; top: 6px; right: 6px; width: 22px; height: 22px; border-radius: 50%; background: #d98b00; color: #fff; font: 700 12px/22px system-ui, sans-serif; text-align: center; }
+  .mock-cap { text-align: center; font-size: .85rem; color: var(--muted); margin: 14px 0 0; }
+</style>
+</head>
+<body>
+<main>
+  <h1>🎓 Assistent Esfer@</h1>
+  <p>Afegeix l’Assistent Esfer@ a la barra de marcadors del navegador i obre-la amb un clic des de qualsevol pàgina.</p>
+
+  <div class="card">
+    <a id="bm" class="bookmarklet" href="javascript:(function(){window.esferaLoaded=false;var old=document.getElementById('esfera-overlay')||document.getElementById('esfera-overlay-batx');if(old)old.remove();var s=document.createElement('script');s.src='https://ignasimartipalet.github.io/Bookmarklet_Esfera/esfera.js?v='+Date.now();document.head.appendChild(s);})()">🎓 Assistent Esfer@</a>
+    <p class="hint">Arrossega aquest botó a la barra de marcadors.</p>
+  </div>
+
+  <h2 class="sep">Assistent Esfer@ optatives</h2>
+  <div class="notice"><strong>En període de proves.</strong> Potser encara no funciona a batxillerat, però a l’ESO sí. Quan estigui acabat del tot, s’integrarà dins de l’<strong>🎓 Assistent Esfer@</strong> i ja no caldrà un marcador a part.</div>
+
+  <div class="card">
+    <a id="bm2" class="bookmarklet" href="#">Assistent Esfer@ optatives</a>
+    <p class="hint">Arrossega aquest botó a la barra de marcadors.</p>
+  </div>
+
+  <h3>Com funciona</h3>
+  <p>Omple de cop notes i comentaris d’una matèria en diversos grups (per exemple, les optatives), a partir d’una llista que enganxes.</p>
+
+  <figure class="mock-wrap" aria-label="Il·lustració de la finestra de l’Assistent Esfer@ optatives">
+    <div class="mock" aria-hidden="true">
+      <div class="hd">
+        <div class="ic">🗂️</div>
+        <h4>Notes i comentaris per grups</h4>
+        <p class="sub">Una línia per alumne: Nom, Nota i Comentari</p>
+        <span class="badge">Avaluació parcial</span>
+      </div>
+      <p class="lb">1 · Llista d’alumnes</p>
+      <div class="blk">
+        <div class="ta">G***** L**** Joan &nbsp;<i>[tab]</i>&nbsp; AN &nbsp;<i>[tab]</i>&nbsp; Participa molt<br>P*** M**** Anna &nbsp;<i>[tab]</i>&nbsp; AE &nbsp;<i>[tab]</i>&nbsp; Molt bon treball<br>R*** V*** Pau &nbsp;<i>[tab]</i>&nbsp; AS &nbsp;<i>[tab]</i>&nbsp; -</div>
+        <span class="mk">2</span>
+      </div>
+      <div class="cnt">3 alumnes detectats</div>
+      <div class="row"><p class="lb" style="margin:0">2 · Grups a recórrer</p><div><span class="sm">Tots</span><span class="sm">Cap</span></div></div>
+      <div class="blk">
+        <div class="gl">
+          <div class="g"><span class="cb on"></span><span><b>3A-OPT</b> · Optativa 3r A <small>ESO</small></span></div>
+          <div class="g"><span class="cb on"></span><span><b>3B-OPT</b> · Optativa 3r B <small>ESO</small></span></div>
+          <div class="g"><span class="cb"></span><span><b>4A-OPT</b> · Optativa 4t A <small>ESO</small></span></div>
+        </div>
+        <span class="mk">4</span>
+      </div>
+      <div class="blk">
+        <div class="dry"><span class="cb on"></span><span><b>Mode prova</b> · no modifica res, només comprova</span></div>
+        <span class="mk" style="top:50%;margin-top:-11px">5</span>
+      </div>
+      <div class="btns"><div class="b1">Cancel·lar</div><div class="b2">Executar →<span class="mk" style="background:#fff;color:#0f0f1a;top:50%;margin-top:-11px">6</span></div></div>
+      <div class="b3">ℹ️ Com funciona</div>
+      <p class="cr">© 2026 Ignasi Martí Palet</p>
+    </div>
+    <figcaption class="mock-cap">Aquesta és la finestra que s’obre en fer clic al marcador. Els números corresponen als passos següents. El 5 és opcional.</figcaption>
+  </figure>
+
+  <ol>
+    <li>Entra a Esfer@, a la llista de grups de <strong>Qualificacions per grup i matèria</strong>, i fes clic al marcador.</li>
+    <li>Enganxa la llista d’alumnes: una línia per alumne amb <strong>nom, nota i comentari</strong> separats per tabulador (es poden copiar tres columnes d’Excel o Sheets).</li>
+    <li>El nom pot anar en qualsevol ordre i sense accents; es compara amb 1r cognom, 2n cognom i nom. Una nota o un comentari buit, o un guió (-), vol dir que no es toca.</li>
+    <li>Marca els grups que vols recórrer.</li>
+    <li><strong>Opcional:</strong> si vols comprovar abans què farà, executa-ho amb el <strong>mode prova</strong> activat. Només mira quins alumnes troba a cada grup, sense canviar res.</li>
+    <li>Desmarca el <strong>mode prova</strong> (ve activat per defecte; si el deixes marcat no es canvia res) i prem <strong>Executar</strong>. L’eina entra a cada grup, escriu les notes i els comentaris, desa i passa al següent. Si un grup té més d’una matèria, et deixa triar-ne una i se’n recorda.</li>
+    <li>Al final surt un resum per grup amb els alumnes no trobats, les notes que no s’han pogut assignar i els comentaris que ja existien.</li>
+  </ol>
+  <p><strong>Notes.</strong> A l’ESO accepta AE, AN, AS i NA, o el text complet. A batxillerat accepta números (7 o 8,5), però és la part que encara està en prova. Mai no sobreescriu un comentari que ja existeix, i si un camp està bloquejat ho indica i no el modifica.</p>
+  <p><strong>Important:</strong> mentre treballa, no tanquis ni recarreguis la pestanya.</p>
+
+  <h2>Com s’instal·la</h2>
+  <ol>
+    <li>Mostra la barra de marcadors: <strong>Ctrl+Maj+B</strong> (Windows/Linux) o <strong>Cmd+Maj+B</strong> (Mac).</li>
+    <li>Arrossega cada botó de dalt cap a la barra (un per eina).</li>
+    <li>Obre la pàgina on el vulguis fer servir i fes clic al marcador.</li>
+  </ol>
+
+  <h2>Si no pots arrossegar-lo</h2>
+  <p>Copia el codi, crea un marcador nou i enganxa’l al camp de l’adreça (URL).</p>
+  <div class="fb">
+    <label for="code">🎓 Assistent Esfer@</label>
+    <textarea id="code" readonly></textarea>
+    <button id="copy" type="button">Copia el codi</button>
+  </div>
+  <div class="fb">
+    <label for="code2">Assistent Esfer@ optatives</label>
+    <textarea id="code2" readonly></textarea>
+    <button id="copy2" type="button">Copia el codi</button>
+  </div>
+</main>
+
+<script type="text/plain" id="optCode">
+javascript:(function(){if(window.__optBusy)return;const sleep=ms=>new Promise(r=>setTimeout(r,ms));async function waitFor(f,ms){ms=ms||15000;const t0=Date.now();while(Date.now()-t0<ms){try{const v=f();if(v)return v;}catch(e){}await sleep(250);}return null;}const norm=s=>(s||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/[^a-z0-9]+/g," ").trim();const stop=["de","del","la","el","els","les","dels","i"];const toks=s=>norm(s).split(" ").filter(w=>w&&!stop.includes(w));const esc=s=>String(s==null?%22%22:s).replace(/[&%3C%3E%22]/g,c=%3E({%22&%22:%22&amp;%22,%22%3C%22:%22&lt;%22,%22%3E%22:%22&gt;%22,%27%22%27:%22&quot;%22}[c]));const%20F=%22font-family:%27Outfit%27,system-ui,sans-serif;box-sizing:border-box;%22;const%20mk=(t,css,html)=%3E{let%20e=document.createElement(t);if(css)e.style.cssText=css;if(html!==undefined)e.innerHTML=html;return%20e;};const%20GI={};if(!document.getElementById(%22optSt%22)){let%20l=document.createElement(%22link%22);l.rel=%22stylesheet%22;l.href=%22https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap%22;document.head.appendChild(l);let%20s=document.createElement(%22style%22);s.id=%22optSt%22;s.textContent=%22@keyframes%20tutorFadeIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}@keyframes%20tutorPulse{0%,100%{opacity:1}50%{opacity:0.3}}%22;document.head.appendChild(s);}const%20sec=(tit,items)=%3E%27%3Cdiv%20style=%22margin-bottom:16px%22%3E%3Cp%20style=%22margin:0%200%208px;font-size:11px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:0.08em%22%3E'+tit+'%3C/p%3E%3Cdiv%20style=%22border-radius:10px;overflow:hidden;border:1px%20solid%20#f0f0f0%22%3E'+items.map((it,i)=%3E'%3Cdiv%20style=%22padding:9px%2014px;font-size:13px;color:#374151;line-height:1.5'+(i%3E0?%22;border-top:1px%20solid%20#f3f4f6%22:%22%22)+'%22%3E'+it+'%3C/div%3E').join(%22%22)+'%3C/div%3E%3C/div%3E';function%20cO(html,close){let%20ov=mk(%22div%22,%22position:fixed;inset:0;background:rgba(10,10,20,0.5);backdrop-filter:blur(6px);z-index:2147483646;display:flex;align-items:center;justify-content:center%22);let%20box=mk(%22div%22,F+%22background:#fff;border-radius:20px;padding:32px;width:560px;max-width:92vw;max-height:90vh;overflow-y:auto;box-shadow:0%2032px%2080px%20rgba(0,0,0,0.18),0%202px%208px%20rgba(0,0,0,0.06);animation:tutorFadeIn%200.22s%20ease;color:#0f0f1a%22,html);ov.appendChild(box);document.body.appendChild(ov);if(close)ov.addEventListener(%22click%22,e=%3E{if(e.target===ov)close();});return%20{ov:ov,box:box};}let%20prog=null;function%20pillOn(t){if(!prog){prog=mk(%22div%22,F+%22position:fixed;top:20px;right:20px;padding:12px%2020px;background:#0f0f1a;color:#fff;font-size:13px;font-weight:500;border-radius:100px;z-index:2147483647;box-shadow:0%208px%2028px%20rgba(0,0,0,0.22);display:flex;align-items:center;gap:10px%22,'%3Cspan%20style=%22width:8px;height:8px;border-radius:50%;background:#4ade80;display:inline-block;animation:tutorPulse%201.2s%20infinite%22%3E%3C/span%3E%3Cspan%20class=%22optPT%22%3E%3C/span%3E');document.body.appendChild(prog);}prog.querySelector(%22.optPT%22).textContent=t;}function%20pillOff(){if(prog){prog.remove();prog=null;}}function%20showModal(html){let%20m=cO(html,()=%3Em.ov.remove());m.box.querySelectorAll(%22.optClose%22).forEach(b=%3Eb.onclick=()=%3Em.ov.remove());return%20m;}const%20evalTxt=()=%3E/final/.test((location.href+%22%20%22+document.title).toLowerCase())?%22Avaluaci%C3%B3%20final%22:%22Avaluaci%C3%B3%20parcial%22;const%20nrmQ=v=%3E{let%20s=norm(v);if([%22na%22,%22no%20assolit%22,%22no%20assoliment%22].includes(s))return%20%22NA%22;if([%22as%22,%22satisfactori%22,%22assoliment%20satisfactori%22].includes(s))return%20%22AS%22;if([%22an%22,%22notable%22,%22assoliment%20notable%22].includes(s))return%20%22AN%22;if([%22ae%22,%22excel%20lent%22,%22excellent%22,%22assoliment%20excel%20lent%22,%22assoliment%20excellent%22].includes(s))return%20%22AE%22;return%20(v||%22%22).trim();};const%20gTable=()=%3EArray.from(document.querySelectorAll(%22table%22)).find(t=%3E{let%20h=t.querySelector(%22thead%22);return%20h&&/codi%20del%20grup/i.test(h.innerText);});const%20gRows=()=%3E{let%20t=gTable();return%20t?Array.from(t.querySelectorAll(%22tbody%20tr%22)).filter(r=%3Er.querySelector(%22a.glyphicon-new-window%22)):[];};const%20sRows=()=%3E{let%20a=Array.from(document.querySelectorAll(%22#my-tab-content%20tbody%20tr%22));if(!a.length)a=Array.from(document.querySelectorAll('table[data-st-table=%22dummyStudents%22]%20tbody%20tr'));return%20a;};const%20ctl=r=%3E{let%20s=r.querySelector(%22td:nth-child(6)%20select%22);if(s)return%20{k:%22sel%22,el:s};let%20i=r.querySelector('input[name=%22qualitativa%22]')||r.querySelector('td:nth-child(6)%20input[type=%22text%22]')||r.querySelector('td:nth-child(6)%20input[type=%22number%22]')||r.querySelector(%22td:nth-child(6)%20input%22);return%20i?{k:%22inp%22,el:i}:null;};const%20notesRows=()=%3EgTable()?0:sRows().filter(r=%3Ectl(r)).length;const%20subjRows=()=%3EgTable()?[]:Array.from(document.querySelectorAll(%22tbody%20tr%22)).filter(r=%3E{if(!r.querySelector(%22a.glyphicon-new-window%22)||r.querySelector(%22select%22)||ctl(r))return%20false;let%20t=r.closest(%22table%22),h=t&&t.querySelector(%22thead%22);return%20!(h&&/cognom|alumn/i.test(h.innerText));});const%20crumbs=()=%3EArray.from(document.querySelectorAll(%22a.bread-crumb-text%22));const%20rtxt=r=%3Er.innerText.replace(/\s+/g,%22%20%22).trim();async%20function%20goList(){if(!gRows().length){location.hash=%22#/%22;await%20waitFor(()=%3EgRows().length,8000);}if(!gRows().length){history.back();await%20waitFor(()=%3EgRows().length,6000);}if(gRows().length)await%20sleep(500);return%20!!gRows().length;}function%20pick(opts,code){return%20new%20Promise(res=%3E{let%20m;const%20done=i=%3E{m.ov.remove();res(i);};m=cO('%3Cdiv%20style=%22text-align:center;margin-bottom:18px%22%3E%3Cdiv%20style=%22width:52px;height:52px;background:#0f0f1a;border-radius:16px;display:inline-flex;align-items:center;justify-content:center;font-size:26px;margin-bottom:14px%22%3E%F0%9F%93%9A%3C/div%3E%3Ch2%20style=%22margin:0%200%204px;font-size:21px;font-weight:700;color:#0f0f1a%22%3EQuina%20mat%C3%A8ria?%3C/h2%3E%3Cp%20style=%22margin:0;font-size:13px;color:#9ca3af%22%3E'+esc(code)+%22:%20hi%20ha%20m%C3%A9s%20d'una%20mat%C3%A8ria%20en%20aquest%20grup%3C/p%3E%3C/div%3E%22,null);opts.forEach((r,i)=%3E{let%20b=mk(%22button%22,F+%22display:block;width:100%;text-align:left;padding:13px%2016px;margin-bottom:8px;font-size:14px;font-weight:600;border:none;border-radius:12px;background:#0f0f1a;color:#fff;cursor:pointer%22);b.textContent=rtxt(r);b.onclick=()=%3Edone(i);m.box.appendChild(b);});let%20s=mk(%22button%22,F+%22width:100%;padding:11px;font-size:13px;font-weight:500;border:1.5px%20solid%20#e5e7eb;border-radius:12px;background:transparent;color:#9ca3af;cursor:pointer;margin-top:4px%22);s.textContent=%22Saltar%20aquest%20grup%22;s.onclick=()=%3Edone(-1);m.box.appendChild(s);});}function%20getStuds(){const%20cands=[document.querySelector(%22#my-tab-content%20.tab-pane.active%22),document.querySelector(%22#my-tab-content%22),document.querySelector('table[data-st-table=%22dummyStudents%22]'),document.querySelector(%22#my-tab-content%20table%22)].filter(Boolean);for(const%20el%20of%20cands){try{let%20sc=angular.element(el).scope();for(let%20i=0;i%3C10&&sc;i++){if(sc.vm&&sc.vm.dummyStudents&&sc.vm.dummyStudents.length)return%20{list:sc.vm.dummyStudents,sc:sc};if(sc.dummyStudents&&sc.dummyStudents.length)return%20{list:sc.dummyStudents,sc:sc};sc=sc.$parent;}}catch(e){}}return%20{list:[],sc:null};}async%20function%20setGrade(r,d,gradeErr){const%20c=ctl(r);if(!c)return;const%20g=d.grade;if(c.k===%22sel%22){const%20code=nrmQ(g).toLowerCase();const%20o=Array.from(c.el.options).find(o=%3E{let%20cd=o.value.replace(/^string:/,%22%22).toLowerCase();return%20cd&&(cd===code||norm(o.text)===norm(g)||norm(o.text.split(%22-%22)[0])===norm(g));});if(o){c.el.selectedIndex=o.index;c.el.dispatchEvent(new%20Event(%22change%22,{bubbles:true}));}else%20gradeErr.push(d.raw+%22%20(%22+g+%22)%22);return;}const%20v=g.replace(%22,%22,%22.%22).trim();if(!/^\d+(\.\d+)?$/.test(v)){gradeErr.push(d.raw+%22%20(%22+g+%22)%22);return;}const%20inp=c.el;if(inp.name===%22qualitativa%22){try{const%20sc=angular.element(r).scope();sc.$apply(()=%3E{const%20al=sc.alumne||(sc.$parent&&sc.$parent.alumne);if(!al)return;(al.asig||[]).forEach(a=%3E(a.elem||[]).forEach(e=%3E{if(Object.prototype.hasOwnProperty.call(e,%22quantitativa%22))e.quantitativa=v;}));});}catch(e){}await%20sleep(150);}if(parseFloat(inp.value)!==parseFloat(v)){inp.value=v;inp.dispatchEvent(new%20InputEvent(%22input%22,{bubbles:true}));inp.dispatchEvent(new%20Event(%22change%22,{bubbles:true}));try{angular.element(inp).triggerHandler(%22input%22);angular.element(inp).triggerHandler(%22change%22);}catch(e){}}}async%20function%20viaModal(q,existing,failed){let%20btn=q.row.querySelector(%22a.glyphicon-new-window%22);if(!btn){failed.push(q.name);return;}btn.click();let%20w=await%20waitFor(()=%3E{let%20ta=document.querySelector('textarea[data-ng-model$=%22commentsToModifyModal%22]')||document.querySelector(%22textarea.form-control%22),sb=document.querySelector('a[data-ng-click=%22vm.modalSave()%22]')||document.querySelector('a[data-ng-click=%22modalSave()%22]');return%20ta&&sb?{ta:ta,sb:sb}:null;},5000);if(!w){failed.push(q.name);return;}let%20cur=w.ta.value.trim();if(cur&&cur!==q.c){existing.push(q.name);}else%20if(!cur){w.ta.value=q.c;w.ta.dispatchEvent(new%20InputEvent(%22input%22,{bubbles:true,inputType:%22insertText%22,data:q.c}));w.ta.dispatchEvent(new%20Event(%22change%22,{bubbles:true}));}w.sb.click();await%20waitFor(()=%3E!document.querySelector('textarea[data-ng-model$=%22commentsToModifyModal%22]')&&!document.querySelector(%22textarea.form-control%22),4000);await%20sleep(200);}async%20function%20desa(){let%20sv=document.querySelector('a[data-ng-click=%22vm.saveNotesAvaluacio()%22]')||document.querySelector('a[data-ng-click=%22saveNotesAvaluacio()%22]')||Array.from(document.querySelectorAll(%22a.btn-primary,button.btn-primary%22)).find(b=%3E/^desa$/i.test(b.innerText.trim()));if(!sv)return%20{t:%22nobtn%22,m:%22%22};sv.click();await%20sleep(2000);let%20ok=await%20waitFor(()=%3EArray.from(document.querySelectorAll(%22.alert-success%22)).some(a=%3E/desat/i.test(a.innerText)),3000);let%20m=%22%22;let%20md=document.querySelector(%22.modal.in,.modal.show%22);if(md){let%20tx=md.innerText.replace(/\s+/g,%22%20%22).trim().slice(0,150);let%20bt=Array.from(md.querySelectorAll(%22a,button%22)).find(b=%3E/^(accepta|d.acord|tanca|ok)$/i.test(b.innerText.trim()));if(bt){bt.click();await%20sleep(500);m=%22di%C3%A0leg%20tancat%20%E2%86%92%20%22+tx;}else%20m=%22di%C3%A0leg%20obert%20sense%20bot%C3%B3%20conegut%20%E2%86%92%20%22+tx;}return%20{t:ok?%22ok%22:%22noconf%22,m:m};}function%20summary(res,dry,nf){const%20col=c=%3Ec===%22ok%22?%22#16a34a%22:c===%22warn%22?%22#d97706%22:%22#dc2626%22;let%20items=res.groups.map(g=%3E%22%3Cb%3E%22+esc(g.code)+%22%3C/b%3E%20%C2%B7%20%22+esc(g.name)+'%3Cbr%3E%3Cspan%20style=%22color:'+col(g.cls)+';font-weight:600%22%3E'+esc(g.st)+'%3C/span%3E%20%3Cspan%20style=%22color:#9ca3af%22%3E%C2%B7%20'+g.found+%22%20alumnes%22+(g.fmt?%22%20%C2%B7%20%22+esc(g.fmt):%22%22)+(g.subj?%22%20%C2%B7%20%22+esc(g.subj):%22%22)+(g.cm?%22%20%C2%B7%20%22+esc(g.cm):%22%22)+%22%3C/span%3E%22);let%20h='%3Cdiv%20style=%22display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:20px%22%3E%3Cdiv%3E%3Ch2%20style=%22margin:0%200%204px;font-size:20px;font-weight:700;color:#0f0f1a%22%3EResum'+(dry?%22%20%C2%B7%20mode%20prova%22:%22%22)+'%3C/h2%3E%3Cp%20style=%22margin:0;font-size:13px;color:#9ca3af%22%3E'+res.groups.length+'%20grups%20processats%3C/p%3E%3C/div%3E%3Cbutton%20class=%22optClose%22%20style=%22'+F+'width:34px;height:34px;border-radius:50%;border:none;background:#f3f4f6;color:#6b7280;font-size:20px;cursor:pointer;line-height:1%22%3E%C3%97%3C/button%3E%3C/div%3E';if(dry)h+='%3Cdiv%20style=%22background:#fff8e1;border:1.5px%20solid%20#f5a623;border-radius:12px;padding:12px%2016px;margin-bottom:18px;font-size:13px;color:#7a5c00;line-height:1.5%22%3E%E2%9A%A0%EF%B8%8F%20Mode%20prova:%20no%20s\'ha%20canviat%20ni%20desat%20res.%3C/div%3E';h+=sec(%22Per%20grup%22,items.length?items:[%22Cap%20grup%20processat%22]);const%20lst=(t,a)=%3E{if(a.length)h+=sec(t,a.map(x=%3Eesc(x)));};lst(%22Incid%C3%A8ncies%22,res.issues);h+=sec(%22No%20trobats%20en%20els%20grups%20triats%22,nf.length?nf.map(x=%3Eesc(x)):[%22%E2%9C%85%20Cap:%20s'han%20trobat%20tots%20els%20alumnes%22]);lst(%22Notes%20no%20assignades%22,res.gradeErr);lst(%22Ja%20tenien%20comentari%20(no%20sobreescrit)%22,res.existing);lst(%22Comentaris%20fallits%22,res.failed);h+='%3Cbutton%20class=%22optClose%22%20style=%22'+F+'width:100%;padding:13px;font-size:14px;font-weight:600;border:none;border-radius:12px;background:#0f0f1a;color:#fff;cursor:pointer%22%3ETancar%3C/button%3E';showModal(h);}async%20function%20run(text,dry,codes){let%20data=text.split(%22\n%22).map(l=%3E{l=l.replace(/\r/g,%22%22);let%20p=l.split(%22\t%22);if(p.length%3C2&&l.indexOf(%22;%22)%3E-1)p=l.split(%22;%22);return%20p;}).filter(p=%3Ep[0]&&p[0].trim()).map(p=%3E({raw:p[0].trim(),t:toks(p[0]),grade:(p[1]||%22%22).trim(),comment:p.slice(2).join(%22%20%22).trim(),done:false}));let%20res={groups:[],issues:[],gradeErr:[],existing:[],failed:[]},chosen=null,n=0;for(const%20code%20of%20codes){n++;pillOn(%22Grup%20%22+n+%22%20/%20%22+codes.length+%22%20%C2%B7%20%22+code);if(!gRows().length&&!(await%20goList())){res.issues.push(%22No%20he%20pogut%20tornar%20a%20la%20llista%20de%20grups,%20m'aturo%22);break;}let%20gi=GI[code]||{};let%20g={code:code,name:gi.name||%22%22,found:0,fmt:%22%22,subj:%22%22,cm:%22%22,st:%22%22,cls:%22ok%22};res.groups.push(g);let%20row=gRows().find(r=%3Er.querySelector(%22td:nth-child(3)%22).innerText.trim()===code);if(!row){g.st=%22no%20trobat%20a%20la%20llista%22;g.cls=%22err%22;continue;}row.querySelector(%22a.glyphicon-new-window%22).click();let%20st=await%20waitFor(()=%3E{if(notesRows())return%20%22notes%22;return%20subjRows().length?%22subj%22:null;},15000);if(!st){g.st=%22no%20s'ha%20carregat%20res%22;g.cls=%22err%22;await%20goList();continue;}if(st===%22subj%22){await%20sleep(800);if(notesRows())st=%22notes%22;}if(st===%22subj%22){let%20sr=subjRows();if(!sr.length){g.st=%22no%20he%20pogut%20llegir%20les%20mat%C3%A8ries%22;g.cls=%22err%22;await%20goList();continue;}let%20mr=null;if(chosen)mr=sr.find(r=%3Enorm(rtxt(r))===chosen);if(!mr){let%20i=await%20pick(sr,code);if(i%3C0){g.st=%22saltat%22;g.cls=%22warn%22;await%20goList();continue;}mr=sr[i];}chosen=norm(rtxt(mr));mr.querySelector(%22a.glyphicon-new-window%22).click();let%20ok=await%20waitFor(()=%3EnotesRows());if(!ok){g.st=%22no%20s'ha%20carregat%20la%20p%C3%A0gina%20de%20notes%22;g.cls=%22err%22;await%20goList();continue;}}await%20sleep(1000);let%20sc=await%20waitFor(()=%3Ecrumbs().find(a=%3E{let%20t=a.innerText.replace(/\s+/g,%22%20%22).trim();return%20t&&!/^\d{4}\/\d{4}/.test(t)&&!/qualificacions|avaluacions/.test(norm(t));}),3000);if(sc)g.subj=sc.innerText.replace(/\s+/g,%22%20%22).trim().slice(0,45);let%20rows=sRows().filter(r=%3E{let%20c=ctl(r);let%20td=r.querySelector(%22td:nth-child(1)%22);return%20c&&td&&!r.querySelector(%22.cursiva%22);});if(rows.length)g.fmt=ctl(rows[0]).k===%22sel%22?%22qualitativa%22:%22nota%20num%C3%A8rica%22;let%20queue=[];for(const%20r%20of%20rows){let%20rt=toks([2,3,4].map(i=%3Er.querySelector(%22td:nth-child(%22+i+%22)%22).innerText).join(%22%20%22));let%20rk=rt.slice().sort().join(%22%20%22);let%20d=data.find(x=%3E!x.done&&x.t.slice().sort().join(%22%20%22)===rk)||data.find(x=%3E!x.done&&x.t.length%3E=2&&x.t.every(t=%3Ert.includes(t)));if(!d)continue;d.done=true;g.found++;if(ctl(r).el.disabled){g.blk=(g.blk||0)+1;res.issues.push(code+%22:%20%22+d.raw+%22%20trobat,%20per%C3%B2%20el%20camp%20est%C3%A0%20bloquejat%22);continue;}if(dry)continue;if(d.grade&&d.grade!==%22-%22)await%20setGrade(r,d,res.gradeErr);if(d.comment&&d.comment!==%22-%22)queue.push({row:r,c:d.comment,name:d.raw});}if(!dry){if(queue.length){let%20nF=0,nS=0,why=%22%22,gs=getStuds(),studs=gs.list,fast=0;if(!studs.length)why=%22no%20trobo%20les%20dades%20d'Angular,%20ho%20faig%20per%20finestra%22;for(const%20q%20of%20queue){let%20id=q.row.querySelector(%22td:nth-child(1)%22).innerText.trim();let%20rk=toks([2,3,4].map(i=%3Eq.row.querySelector(%22td:nth-child(%22+i+%22)%22).innerText).join(%22%20%22)).sort().join(%22%20%22);let%20s2=(id&&studs.find(s=%3Es.idRalc!=null&&String(s.idRalc).trim()===id))||studs.find(s=%3Etoks([s.cognom1,s.cognom2,s.nom].join(%22%20%22)).sort().join(%22%20%22)===rk);if(!s2){q.slow=true;continue;}if(String(s2.comentaris||%22%22).trim()){res.existing.push(q.name);q.skip=true;continue;}s2.comentaris=q.c;q.fo=s2;fast++;}if(fast&&gs.sc){try{gs.sc.$apply();}catch(e){why+=%22%20$apply:%20%22+e.message;}}await%20sleep(400);for(const%20q%20of%20queue){if(q.skip)continue;if(q.fo&&String(q.fo.comentaris||%22%22).trim()===q.c){nF++;continue;}nS++;await%20viaModal(q,res.existing,res.failed);}g.cm=%22comentaris:%20%22+nF+%22%20directes%22+(nS?%22,%20%22+nS+%22%20per%20finestra%22:%22%22);if(why)res.issues.push(code+%22:%20%22+why);await%20sleep(500);}if(g.found%3E(g.blk||0)){let%20r2=await%20desa();if(r2.t===%22nobtn%22){g.st=%22NO%20he%20trobat%20el%20bot%C3%B3%20Desa%22;g.cls=%22err%22;}else%20if(r2.t===%22noconf%22){g.st=%22desat%20(sense%20av%C3%ADs%20de%20confirmaci%C3%B3%20visible)%22;g.cls=%22warn%22;}else%20g.st=%22desat%22;if(r2.m)res.issues.push(code+%22:%20%22+r2.m);}else{g.st=g.found?%22alumnes%20trobats%20per%C3%B2%20bloquejats%20(res%20desat)%22:%22cap%20alumne%20de%20la%20llista%20(res%20desat)%22;g.cls=%22warn%22;}}else{g.st=g.found?%22prova:%20alumnes%20trobats%22:%22prova:%20cap%20alumne%20de%20la%20llista%22;g.cls=g.found?%22ok%22:%22warn%22;}if(!(await%20goList())){res.issues.push(%22No%20he%20pogut%20tornar%20a%20la%20llista%20de%20grups,%20m'aturo%22);break;}}let%20nf=data.filter(x=%3E!x.done).map(x=%3Ex.raw);pillOff();window.onbeforeunload=null;window.__optBusy=false;summary(res,dry,nf);}async%20function%20init(){if(!gRows().length&&!(await%20goList())){alert(%22Ves%20a%20la%20llista%20de%20grups%20(Qualificacions%20per%20grup%20i%20mat%C3%A8ria)%20i%20torna-ho%20a%20provar.%22);return;}const%20groups=gRows().map(r=%3E({code:r.querySelector(%22td:nth-child(3)%22).innerText.trim(),name:r.querySelector(%22td:nth-child(4)%22).innerText.trim(),ens:(r.querySelector(%22td:nth-child(5)%22)||{innerText:%22%22}).innerText.trim()}));groups.forEach(g=%3EGI[g.code]=g);window.__optBusy=true;const%20lab=t=%3E'%3Cp%20style=%22margin:0;font-size:11px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:0.08em%22%3E'+t+%22%3C/p%3E%22;const%20sm=F+%22padding:5px%2012px;font-size:12px;font-weight:600;border:1.5px%20solid%20#e5e7eb;border-radius:8px;background:transparent;color:#6b7280;cursor:pointer;%22;const%20H='%3Cdiv%20class=%22optMain%22%3E%3Cdiv%20style=%22text-align:center;margin-bottom:22px%22%3E%3Cdiv%20style=%22width:52px;height:52px;background:#0f0f1a;border-radius:16px;display:inline-flex;align-items:center;justify-content:center;font-size:26px;margin-bottom:14px%22%3E%F0%9F%97%82%EF%B8%8F%3C/div%3E%3Ch2%20style=%22margin:0%200%204px;font-size:21px;font-weight:700;color:#0f0f1a%22%3ENotes%20i%20comentaris%20per%20grups%3C/h2%3E%3Cp%20style=%22margin:0%200%2010px;font-size:13px;color:#9ca3af%22%3EUna%20l%C3%ADnia%20per%20alumne:%20Nom,%20Nota%20i%20Comentari%3C/p%3E%3Cspan%20style=%22display:inline-block;background:#f0f4ff;color:#3d6b9e;border:1px%20solid%20#c5d5f0;border-radius:20px;padding:3px%2010px;font-size:11px;font-weight:500%22%3E'+evalTxt()+'%3C/span%3E%3C/div%3E%3Cdiv%20style=%22margin-bottom:6px%22%3E'+lab(%221%20%C2%B7%20Llista%20d'alumnes%22)+'%3C/div%3E%3Ctextarea%20class=%22optTA%22%20placeholder=%22Garcia%20L%C3%B3pez%20Joan%20%20[tab]%20%20AN%20%20[tab]%20%20Comentari&#10;Puig%20Mart%C3%AD%20Anna%20%20[tab]%20%20AE%20%20[tab]%20%20Comentari%22%20style=%22'+F+'width:100%;height:150px;border:1.5px%20solid%20#e5e7eb;border-radius:12px;padding:14px;font-size:13px;color:#0f0f1a;resize:vertical;outline:none;line-height:1.6%22%3E%3C/textarea%3E%3Cdiv%20class=%22optCnt%22%20style=%22font-size:12px;color:#9ca3af;min-height:18px;margin:6px%200%2014px%22%3E%3C/div%3E%3Cdiv%20style=%22display:flex;align-items:center;justify-content:space-between;margin-bottom:8px%22%3E'+lab(%222%20%C2%B7%20Grups%20a%20rec%C3%B3rrer%22)+'%3Cdiv%20style=%22display:flex;gap:6px%22%3E%3Cbutton%20class=%22optAll%22%20style=%22'+sm+'%22%3ETots%3C/button%3E%3Cbutton%20class=%22optNone%22%20style=%22'+sm+'%22%3ECap%3C/button%3E%3C/div%3E%3C/div%3E%3Cdiv%20class=%22optG%22%20style=%22max-height:200px;overflow-y:auto;border:1px%20solid%20#f0f0f0;border-radius:12px%22%3E%3C/div%3E%3Clabel%20style=%22display:flex;align-items:center;gap:10px;margin-top:14px;padding:12px%2014px;border:1.5px%20solid%20#e5e7eb;border-radius:12px;cursor:pointer;font-size:13px;color:#374151%22%3E%3Cinput%20type=%22checkbox%22%20class=%22optDry%22%20checked%20style=%22accent-color:#0f0f1a;width:16px;height:16px%22%3E%3Cspan%3E%3Cb%3EMode%20prova%3C/b%3E%20%C2%B7%20no%20modifica%20res,%20nom%C3%A9s%20comprova%3C/span%3E%3C/label%3E%3Cdiv%20class=%22optMsg%22%20style=%22font-size:12px;color:#dc2626;min-height:18px;margin:10px%200;text-align:center%22%3E%3C/div%3E%3Cdiv%20style=%22display:flex;gap:10px%22%3E%3Cbutton%20class=%22optNo%22%20style=%22'+F+'flex:1;padding:13px;font-size:14px;font-weight:600;border:1.5px%20solid%20#e5e7eb;border-radius:12px;background:transparent;color:#9ca3af;cursor:pointer%22%3ECancel%C2%B7lar%3C/button%3E%3Cbutton%20class=%22optGo%22%20style=%22'+F+'flex:2;padding:13px;font-size:14px;font-weight:600;border:none;border-radius:12px;background:#0f0f1a;color:#fff;cursor:pointer%22%3EExecutar%20%E2%86%92%3C/button%3E%3C/div%3E%3Cbutton%20class=%22optI%22%20style=%22'+F+'width:100%;margin-top:10px;padding:10px;font-size:13px;font-weight:500;border:1.5px%20solid%20#e5e7eb;border-radius:12px;background:transparent;color:#6b7280;cursor:pointer%22%3E%E2%84%B9%EF%B8%8F%20Com%20funciona%3C/button%3E%3Cp%20style=%22font-size:11px;color:#9ca3af;text-align:center;margin:14px%200%200%22%3E%C2%A9%202026%20Ignasi%20Mart%C3%AD%20Palet%3C/p%3E%3C/div%3E';const%20I='%3Cdiv%20class=%22optInfo%22%20style=%22display:none%22%3E%3Cbutton%20class=%22optBack%22%20style=%22'+F+'background:none;border:none;color:#6b7280;font-size:13px;cursor:pointer;padding:0;margin-bottom:16px;display:block%22%3E%E2%86%90%20Tornar%3C/button%3E%3Ch2%20style=%22margin:0%200%2018px;font-size:18px;font-weight:700;color:#0f0f1a%22%3E%E2%84%B9%EF%B8%8F%20Com%20funciona%3C/h2%3E'+sec(%22Llista%22,[%22%F0%9F%93%8B%20Una%20l%C3%ADnia%20per%20alumne:%20%3Cb%3ENom%3C/b%3E,%20%3Cb%3ENota%3C/b%3E%20i%20%3Cb%3EComentari%3C/b%3E%20separats%20per%20tabulador%20(copia%20tres%20columnes%20d'Excel%20o%20Sheets).%22,%22%F0%9F%94%A4%20El%20nom%20pot%20anar%20en%20qualsevol%20ordre%20i%20sense%20accents.%20Es%20compara%201r%20cognom,%202n%20cognom%20i%20nom.%22,%22%E2%AC%9C%20Nota%20o%20comentari%20buit,%20o%20%3Cb%3E-%3C/b%3E,%20vol%20dir%20no%20tocar.%22])+sec(%22Notes%22,[%22%F0%9F%8E%93%20%3Cb%3EESO%3C/b%3E%20(qualitatives):%20AE,%20AN,%20AS,%20NA%20o%20el%20text%20complet%20(Assoliment%20notable...).%22,%22%F0%9F%94%A2%20%3Cb%3EBatxillerat%3C/b%3E%20(num%C3%A8riques):%20un%20n%C3%BAmero,%20p.%20ex.%207%20o%208,5.%22,%22%F0%9F%93%9D%20%3Cb%3EAvaluacions%20finals%3C/b%3E:%20s'adapta%20al%20camp%20que%20troba%20a%20cada%20grup%20(desplegable%20o%20num%C3%A8ric).%22])+sec(%22Comentaris%22,[%22%E2%9A%A1%20S'escriuen%20tots%20de%20cop%20a%20les%20dades%20de%20la%20p%C3%A0gina,%20sense%20obrir%20cada%20alumne.%20Si%20cal,%20ho%20fa%20per%20la%20finestra.%22,%22%F0%9F%9B%A1%EF%B8%8F%20Mai%20no%20sobreescriu%20un%20comentari%20que%20ja%20existeix.%22])+sec(%22Grups%20i%20mat%C3%A8ries%22,[%22%F0%9F%97%82%EF%B8%8F%20Nom%C3%A9s%20entra%20als%20grups%20que%20marquis%20i%20desa%20cada%20un%20abans%20de%20passar%20al%20seg%C3%BCent.%22,%22%F0%9F%93%9A%20Si%20en%20un%20grup%20tens%20m%C3%A9s%20d'una%20mat%C3%A8ria,%20et%20deixa%20triar-ne%20una%20i%20la%20recorda.%22,%22%F0%9F%A7%AA%20El%20mode%20prova%20nom%C3%A9s%20comprova%20quins%20alumnes%20troba%20a%20cada%20grup.%22,%22%F0%9F%94%92%20Si%20el%20camp%20est%C3%A0%20bloquejat,%20l'alumne%20es%20detecta%20per%C3%B2%20no%20es%20modifica%20res.%22])+%22%3C/div%3E%22;let%20dlg;const%20closeAll=()=%3E{dlg.ov.remove();window.__optBusy=false;};dlg=cO(H+I,closeAll);const%20box=dlg.box;const%20gd=box.querySelector(%22.optG%22),ta=box.querySelector(%22.optTA%22),cnt=box.querySelector(%22.optCnt%22),msg=box.querySelector(%22.optMsg%22);groups.forEach((g,i)=%3E{let%20l=mk(%22label%22,F+%22display:flex;align-items:center;gap:10px;padding:9px%2014px;cursor:pointer;font-size:13px;color:#111%22+(i%3E0?%22;border-top:1px%20solid%20#f3f4f6%22:%22%22));let%20cb=mk(%22input%22);cb.type=%22checkbox%22;cb.value=g.code;cb.style.cssText=%22accent-color:#0f0f1a;width:16px;height:16px;flex-shrink:0%22;let%20s=mk(%22span%22,%22%22,%22%3Cb%3E%22+esc(g.code)+%22%3C/b%3E%20%C2%B7%20%22+esc(g.name)+'%20%3Cspan%20style=%22color:#9ca3af;font-size:12px%22%3E'+esc(g.ens)+%22%3C/span%3E%22);l.appendChild(cb);l.appendChild(s);gd.appendChild(l);});ta.addEventListener(%22input%22,()=%3E{let%20k=ta.value.split(%22\n%22).filter(l=%3El.split(%22\t%22)[0].trim()).length;cnt.textContent=k?k+%22%20alumne%22+(k%3E1?%22s%22:%22%22)+%22%20detectat%22+(k%3E1?%22s%22:%22%22):%22%22;});box.querySelector(%22.optAll%22).onclick=()=%3Egd.querySelectorAll(%22input%22).forEach(c=%3Ec.checked=true);box.querySelector(%22.optNone%22).onclick=()=%3Egd.querySelectorAll(%22input%22).forEach(c=%3Ec.checked=false);box.querySelector(%22.optNo%22).onclick=closeAll;box.querySelector(%22.optI%22).onclick=()=%3E{box.querySelector(%22.optMain%22).style.display=%22none%22;box.querySelector(%22.optInfo%22).style.display=%22block%22;};box.querySelector(%22.optBack%22).onclick=()=%3E{box.querySelector(%22.optInfo%22).style.display=%22none%22;box.querySelector(%22.optMain%22).style.display=%22block%22;};box.querySelector(%22.optGo%22).onclick=function(){let%20t=ta.value,d=box.querySelector(%22.optDry%22).checked,sel=Array.from(gd.querySelectorAll(%22input:checked%22)).map(c=%3Ec.value);if(!t.trim()){msg.textContent=%22%E2%9A%A0%EF%B8%8F%20Enganxa%20la%20llista%20d'alumnes%22;return;}if(!sel.length){msg.textContent=%22%E2%9A%A0%EF%B8%8F%20Marca%20almenys%20un%20grup%22;return;}dlg.ov.remove();window.onbeforeunload=()=%3E%22recarrega%22;run(t,d,sel).catch(e=%3E{window.onbeforeunload=null;window.__optBusy=false;pillOff();showModal('%3Ch2%20style=%22margin:0%200%2010px;font-size:20px;font-weight:700;color:#0f0f1a%22%3EError%3C/h2%3E%3Cp%20style=%22font-size:13px;color:#374151;line-height:1.5%22%3E'+esc(e.message)+'%3C/p%3E%3Cbutton%20class=%22optClose%22%20style=%22'+F+'width:100%;padding:13px;font-size:14px;font-weight:600;border:none;border-radius:12px;background:#0f0f1a;color:#fff;cursor:pointer%22%3ETancar%3C/button%3E');});};}init().catch(e=%3E{window.__optBusy=false;alert(%22ERROR:%20%22+e.message);});})();
+</script>
+<script>
+  document.getElementById('bm2').href = document.getElementById('optCode').textContent.trim();
+
+  [['bm', 'code', 'copy'], ['bm2', 'code2', 'copy2']].forEach(function (p) {
+    var link = document.getElementById(p[0]);
+    var box = document.getElementById(p[1]);
+    var btn = document.getElementById(p[2]);
+    box.value = link.getAttribute('href');
+
+    link.addEventListener('click', function (e) {
+      e.preventDefault();
+      alert('Arrossega el botó a la barra de marcadors en comptes de fer-hi clic.');
+    });
+
+    btn.addEventListener('click', function () {
+      var done = function () {
+        btn.textContent = 'Copiat';
+        setTimeout(function () { btn.textContent = 'Copia el codi'; }, 1800);
+      };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(box.value).then(done, function () { box.select(); });
+      } else {
+        box.select();
+        document.execCommand('copy');
+        done();
+      }
+    });
+  });
+</script>
+</body>
+</html>
