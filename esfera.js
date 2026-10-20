@@ -883,6 +883,21 @@ if(isA){
     aC(text,idx2,wM,cb);
   }
 
+  // FIX: normalitza notes qualitatives ESO (NA, AS, AN, AE) acceptant el text complet.
+  // Tolera accents, majúscules, espais i variants del punt volat (·, •, ∙, .).
+  // Si el valor no el reconeix (p.ex. un número), el retorna tal qual.
+  function nrmESO(v){
+    const orig=(v||'').trim();
+    const s=orig.toLowerCase()
+      .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+      .replace(/[·•∙.\s]+/g,'');
+    if(s==='na'||s==='noassolit'||s==='noassoliment')return 'NA';
+    if(s==='as'||s==='satisfactori'||s==='assolimentsatisfactori')return 'AS';
+    if(s==='an'||s==='notable'||s==='assolimentnotable')return 'AN';
+    if(s==='ae'||s==='excellent'||s==='excelent'||s==='assolimentexcellent'||s==='assolimentexcelent')return 'AE';
+    return orig;
+  }
+
   function aN(text,idx2,wM){
     const grades=text.split('\n').map(s=>s.split('\t'));
     const rows=gR();const tg=idx2!==null?idx2.map(i=>rows[i]):rows;const sk=[];
@@ -910,9 +925,10 @@ if(isA){
       const sg=grades[i];
       for(let j=0;j<sg.length;j++){
         if(sg[j]!==''){
+          const val=nrmESO(sg[j]);
           const sel=row.querySelector(`td:nth-child(${6+j})>div>div>select`);
-          if(sel){sel.value='string:'+sg[j].trim();sel.dispatchEvent(new Event('change'));}
-          else{const inp=row.querySelector(`td:nth-child(${6+j}) input[type="text"]`)||row.querySelector(`td:nth-child(${6+j}) input[type="number"]`)||row.querySelector(`td:nth-child(${6+j}) input`);if(inp){inp.value=sg[j].trim();inp.dispatchEvent(new Event('input',{bubbles:true}));inp.dispatchEvent(new Event('change',{bubbles:true}));}}
+          if(sel){sel.value='string:'+val;sel.dispatchEvent(new Event('change'));}
+          else{const inp=row.querySelector(`td:nth-child(${6+j}) input[type="text"]`)||row.querySelector(`td:nth-child(${6+j}) input[type="number"]`)||row.querySelector(`td:nth-child(${6+j}) input`);if(inp){inp.value=val;inp.dispatchEvent(new Event('input',{bubbles:true}));inp.dispatchEvent(new Event('change',{bubbles:true}));}}
         }
       }
     }
