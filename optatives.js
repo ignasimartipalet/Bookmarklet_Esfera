@@ -351,7 +351,82 @@
       if (!p.ok && !(inp && parseFloat(inp.value) === parseFloat(p.v))) gradeErr.push(p.d.raw + " (" + p.v + ": no s'ha pogut escriure al camp)");
     }
   }
-  async function viaModal(q, existing, failed) {
+  // Diàleg: comentaris que ja existeixen. Cada caixa blava es clica per triar: verd = sobreescriure, vermell = no sobreescriure.
+  // Retorna una llista de booleans (true = sobreescriure). Les caixes que queden blaves (sense decidir) es respecten.
+  async function decideOverwrite(code, items) {
+    const ST = {
+      0: { bg: "#dbeafe", bd: "#2563eb", tx: "#1e3a8a", lb: "🔵 Sense decidir · es respecta" },
+      1: { bg: "#dcfce7", bd: "#16a34a", tx: "#14532d", lb: "🟢 Es sobreescriurà" },
+      2: { bg: "#fee2e2", bd: "#dc2626", tx: "#7f1d1d", lb: "🔴 No es sobreescriurà" },
+    };
+    const state = items.map(() => 0);
+    const rowsH = items
+      .map(
+        (it, i) =>
+          '<div style="margin-bottom:12px"><div style="font-size:13px;font-weight:600;color:#0f0f1a;margin-bottom:5px">' +
+          esc(it.name) +
+          '</div><div class="optOw" data-i="' +
+          i +
+          '" style="cursor:pointer;border:2px solid;border-radius:10px;padding:9px 12px;font-size:13px;line-height:1.45;white-space:pre-wrap;word-break:break-word"></div>' +
+          '<div style="font-size:11px;color:#6b7280;margin-top:4px;line-height:1.4"><b>Nou:</b> ' +
+          esc(it.neu) +
+          "</div></div>",
+      )
+      .join("");
+    const btn = (cls, bg, col, bd, t) =>
+      '<button class="' + cls + '" style="' + F + "padding:9px 12px;font-size:12px;font-weight:600;border-radius:10px;cursor:pointer;background:" + bg + ";color:" + col + ";border:1.5px solid " + bd + '">' + t + "</button>";
+    const h =
+      '<div style="' + F + '"><h2 style="' + F + 'margin:0 0 4px;font-size:19px;font-weight:700;color:#0f0f1a">Comentaris ja existents</h2>' +
+      '<p style="' + F + 'margin:0 0 14px;font-size:13px;color:#6b7280;line-height:1.5">Grup <b>' + esc(code) + "</b>: " +
+      (items.length > 1 ? "aquests alumnes ja tenen" : "aquest alumne ja té") +
+      " comentari. Clica la caixa per triar: <b style='color:#16a34a'>verd</b> = sobreescriure, <b style='color:#dc2626'>vermell</b> = no sobreescriure. Les que quedin <b style='color:#2563eb'>blaves</b> no es toquen.</p>" +
+      '<div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap">' +
+      btn("optOwAll", "#dcfce7", "#14532d", "#16a34a", "Sobreescriure tots") +
+      btn("optOwNone", "#fee2e2", "#7f1d1d", "#dc2626", "No sobreescriure cap") +
+      '</div><div style="max-height:340px;overflow-y:auto;padding-right:4px">' + rowsH + "</div>" +
+      '<div class="optOwInfo" style="font-size:12px;color:#6b7280;text-align:center;margin:10px 0"></div>' +
+      '<button class="optOwGo" style="' + F + 'width:100%;padding:13px;font-size:14px;font-weight:600;border:none;border-radius:12px;background:#0f0f1a;color:#fff;cursor:pointer">Continuar →</button></div>';
+    const m = showModal(h);
+    let done = false;
+    const paint = () => {
+      m.box.querySelectorAll(".optOw").forEach((el) => {
+        const c = ST[state[+el.dataset.i]];
+        el.style.background = c.bg;
+        el.style.borderColor = c.bd;
+        el.style.color = c.tx;
+        el.textContent = items[+el.dataset.i].cur;
+        el.title = c.lb;
+      });
+      const g = state.filter((x) => x === 1).length,
+        r = state.filter((x) => x === 2).length,
+        b = state.filter((x) => x === 0).length;
+      m.box.querySelector(".optOwInfo").textContent = "🟢 " + g + " · 🔴 " + r + " · 🔵 " + b;
+    };
+    m.box.querySelectorAll(".optOw").forEach((el) => {
+      el.onclick = () => {
+        const i = +el.dataset.i;
+        state[i] = state[i] === 1 ? 2 : 1;
+        paint();
+      };
+    });
+    m.box.querySelector(".optOwAll").onclick = () => {
+      state.fill(1);
+      paint();
+    };
+    m.box.querySelector(".optOwNone").onclick = () => {
+      state.fill(2);
+      paint();
+    };
+    m.box.querySelector(".optOwGo").onclick = () => {
+      done = true;
+      m.ov.remove();
+    };
+    paint();
+    // si es tanca la finestra sense continuar (× o clic fora), no se sobreescriu res
+    await waitFor(() => (m.ov.isConnected ? null : true), 3600000, 200);
+    return state.map((x) => x === 1 && done);
+  }
+  async function viaModal(q, existing, failed, decide) {
     let btn = q.row.querySelector("a.glyphicon-new-window");
     if (!btn) {
       failed.push(q.name);
@@ -372,9 +447,12 @@
       return;
     }
     let cur = w.ta.value.trim();
+    let ow = false;
     if (cur && cur !== q.c) {
-      existing.push(q.name);
-    } else if (!cur) {
+      if (decide) ow = await decide(q.name, cur, q.c);
+      if (!ow) existing.push(q.name);
+    }
+    if (!cur || ow) {
       w.ta.value = q.c;
       w.ta.dispatchEvent(new InputEvent("input", { bubbles: true, inputType: "insertText", data: q.c }));
       w.ta.dispatchEvent(new Event("change", { bubbles: true }));
@@ -487,7 +565,7 @@
         (dry ? "Provar amb els alumnes marcats" : "Aplicar als alumnes marcats") +
         "</button>";
     lst("Notes no assignades", res.gradeErr);
-    lst("Ja tenien comentari (no sobreescrit)", res.existing);
+    lst("Ja tenien comentari (no s'ha sobreescrit)", res.existing);
     lst("Comentaris fallits", res.failed);
     h +=
       '<button class="optClose" style="' +
@@ -747,6 +825,7 @@ function assignaNoms(files,entrades){
             why = "",
             gs = getStuds(),
             studs = gs.list,
+            conf = [],
             fast = 0;
           if (!studs.length) why = "no trobo les dades d'Angular, ho faig per finestra";
           for (const q of queue) {
@@ -761,14 +840,31 @@ function assignaNoms(files,entrades){
               q.slow = true;
               continue;
             }
-            if (String(s2.comentaris || "").trim()) {
-              res.existing.push(q.name);
-              q.skip = true;
+            const cur0 = String(s2.comentaris || "").trim();
+            if (cur0) {
+              if (cur0 === q.c) q.skip = true;
+              else conf.push({ q: q, s2: s2, cur: cur0 });
               continue;
             }
             s2.comentaris = q.c;
             q.fo = s2;
             fast++;
+          }
+          if (conf.length) {
+            const dec = await decideOverwrite(
+              code,
+              conf.map((x) => ({ name: x.q.name, cur: x.cur, neu: x.q.c })),
+            );
+            conf.forEach((x, i) => {
+              if (dec[i]) {
+                x.s2.comentaris = x.q.c;
+                x.q.fo = x.s2;
+                fast++;
+              } else {
+                res.existing.push(x.q.name);
+                x.q.skip = true;
+              }
+            });
           }
           if (fast && gs.sc) {
             try {
@@ -785,7 +881,7 @@ function assignaNoms(files,entrades){
               continue;
             }
             nS++;
-            await viaModal(q, res.existing, res.failed);
+            await viaModal(q, res.existing, res.failed, async (nm, cu, ne) => (await decideOverwrite(code, [{ name: nm, cur: cu, neu: ne }]))[0]);
           }
           g.cm = "comentaris: " + nF + " directes" + (nS ? ", " + nS + " per finestra" : "");
           if (why) res.issues.push(code + ": " + why);
@@ -904,7 +1000,7 @@ function assignaNoms(files,entrades){
       ]) +
       sec("Comentaris", [
         "⚡ S'escriuen tots de cop a les dades de la pàgina, sense obrir cada alumne. Si cal, ho fa per la finestra.",
-        "🛡️ Mai no sobreescriu un comentari que ja existeix.",
+        "🛡️ Si un alumne ja té comentari, et mostra el que hi ha i tries alumne per alumne si el vols sobreescriure (verd) o no (vermell). Si no decideixes, no es toca.",
       ]) +
       sec("Grups i matèries", [
         "🗂️ Només entra als grups que marquis i desa cada un abans de passar al següent.",
