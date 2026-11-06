@@ -183,6 +183,12 @@
   .mock .tb { display: flex; align-items: center; gap: 12px; padding: 11px 16px; border-radius: 12px; background: #0f0f1a; color: #fff; font-weight: 600; font-size: 13px; margin-bottom: 8px; }
   .mock .tb.o { background: #fff; color: #0f0f1a; border: 2px solid #0f0f1a; padding: 9px 16px; }
   .mock .tb.l { background: #fff; color: #6b7280; border: 1.5px solid #e5e7eb; font-weight: 500; justify-content: center; padding: 8px; }
+  .mock .ow { border: 2px solid; border-radius: 10px; padding: 8px 12px; font-size: 12px; margin: 4px 0 2px; }
+  .mock .ow.b { background: #dbeafe; border-color: #2563eb; color: #1e3a8a; }
+  .mock .ow.g { background: #dcfce7; border-color: #16a34a; color: #14532d; }
+  .mock .ow.r { background: #fee2e2; border-color: #dc2626; color: #7f1d1d; }
+  .mock .nm { font-size: 12px; font-weight: 600; margin-top: 10px; }
+  .mock .nw { font-size: 11px; color: #6b7280; }
   .mock .hint { margin: 6px 0 0; font-size: 11px; color: #9ca3af; line-height: 1.45; }
   .mk { position: absolute; top: 6px; right: 6px; width: 22px; height: 22px; border-radius: 50%; background: #d98b00; color: #fff; font: 700 12px/22px system-ui, sans-serif; text-align: center; }
   .mock-cap { text-align: center; font-size: .85rem; color: var(--muted); margin: 14px 0 0; }
@@ -344,10 +350,27 @@
     <li>El nom pot anar en qualsevol ordre i sense accents; es compara amb 1r cognom, 2n cognom i nom. Una nota o un comentari buit, o un guió (-), vol dir que no es toca.</li>
     <li>Marca els grups que vols recórrer.</li>
     <li><strong>Opcional:</strong> si vols comprovar abans què farà, executa-ho amb el <strong>mode prova</strong> activat. Només mira quins alumnes troba a cada grup, sense canviar res.</li>
-    <li>Desmarca el <strong>mode prova</strong> (ve activat per defecte; si el deixes marcat no es canvia res) i prem <strong>Executar</strong>. L’eina entra a cada grup, escriu les notes i els comentaris, desa i passa al següent. Si un grup té més d’una matèria, et deixa triar-ne una i se’n recorda.</li>
-    <li>Al final surt un resum per grup amb els alumnes no trobats, les notes que no s’han pogut assignar i els comentaris que ja existien.</li>
+    <li>Desmarca el <strong>mode prova</strong> (ve activat per defecte; si el deixes marcat no es canvia res) i prem <strong>Executar</strong>. L’eina entra a cada grup, escriu les notes i els comentaris, desa i passa al següent. Si algun alumne ja té un comentari diferent, s’atura i et pregunta què fer (vegeu més avall). Si un grup té més d’una matèria, et deixa triar-ne una i se’n recorda.</li>
+    <li>Al final surt un resum per grup amb els alumnes no trobats, les notes que no s’han pogut assignar i els comentaris que ja existien i no s’han sobreescrit.</li>
   </ol>
-  <p><strong>Notes.</strong> Mai no sobreescriu un comentari que ja existeix, i si un camp està bloquejat ho indica i no el modifica.</p>
+  <h3>Si ja hi ha comentaris posats</h3>
+  <p>Quan en un grup hi ha alumnes que ja tenen un comentari diferent del nou, l’eina s’atura i te’ls mostra. Cada comentari existent surt en una caixa <strong>blava</strong>, i el clic va alternant entre <strong>verd</strong> (se sobreescriu) i <strong>vermell</strong> (es deixa com està). També pots fer servir «Sobreescriure tots» o «No sobreescriure cap». Les caixes que deixis blaves no es toquen.</p>
+
+  <figure class="mock-wrap" aria-label="Il·lustració del diàleg de comentaris ja existents">
+    <div class="mock narrow" aria-hidden="true">
+      <div style="font-size:15px;font-weight:700;color:#0f0f1a">Comentaris ja existents</div>
+      <div style="margin:4px 0 10px;font-size:12px;color:#6b7280">Grup <strong>3A-OPT</strong>: aquests alumnes ja tenen comentari.</div>
+      <div class="row" style="gap:6px;margin-bottom:6px;justify-content:flex-start"><span class="ow g" style="margin:0;padding:5px 9px;font-size:11px">Sobreescriure tots</span><span class="ow r" style="margin:0;padding:5px 9px;font-size:11px">No sobreescriure cap</span></div>
+      <div class="nm">Vila Mas Eva</div><div class="ow g">Treballa molt bé</div><div class="nw"><b>Nou:</b> Molt bon treball</div>
+      <div class="nm">Puig Marti Anne</div><div class="ow r">Participa poc</div><div class="nw"><b>Nou:</b> Millora</div>
+      <div class="nm">Roca Pons Joan</div><div class="ow b">Correcte</div><div class="nw"><b>Nou:</b> Notable</div>
+      <div class="info" style="text-align:center">🟢 1 · 🔴 1 · 🔵 1</div>
+      <div class="apl" style="background:#0f0f1a">Continuar →</div>
+    </div>
+    <figcaption class="mock-cap">El diàleg es mostra un cop per grup. Verd: se sobreescriu. Vermell: es respecta el que hi havia. Blau: encara sense decidir, que també es respecta.</figcaption>
+  </figure>
+
+  <p><strong>Nota.</strong> Si un camp està bloquejat, ho indica i no el modifica.</p>
   <p><strong>Important:</strong> mentre treballa, no tanquis ni recarreguis la pestanya.</p>
 
   <h2>Com s’instal·la</h2>
