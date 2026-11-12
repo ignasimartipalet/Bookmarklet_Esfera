@@ -101,20 +101,52 @@ var _st=(...a)=>setTimeout(...a);
   function sP(prog,t){let el=prog.querySelector('#tutorProgressText');if(el)el.textContent=t;}
   function cT(id,btn){let taula=_id(id);if(!taula)return;let files=taula.querySelectorAll('tr');let text='';files.forEach(tr=>{let cel=tr.querySelectorAll('th,td');let fila=Array.from(cel).map(c=>c.textContent.trim()).join('\t');text+=fila+'\n';});navigator.clipboard.writeText(text).then(()=>{btn.textContent='✓ Copiat!';btn.style.background='#16a34a';_st(()=>{btn.textContent='📋 Copiar taula';btn.style.background='#0f0f1a';},2000);});}
   function mR(total,mm,sm,al){let html='<div style="'+F+'"><div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:24px"><div><h2 style="'+F+'margin:0 0 4px;font-size:20px;font-weight:700;color:#0f0f1a">Resum de l\'acta</h2><p style="'+F+'margin:0;font-size:13px;color:#9ca3af">'+total+' alumnes processats</p></div><button id="btnTancarRes" style="'+F+'width:34px;height:34px;border-radius:50%;border:none;background:#f3f4f6;color:#6b7280;font-size:20px;cursor:pointer;line-height:1">×</button></div>';
-  html+='<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px"><p style="'+F+'font-size:11px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:0.08em;margin:0">Per matèria</p><button id="btnCopy1" style="'+F+'padding:6px 12px;font-size:12px;font-weight:600;border:none;border-radius:8px;background:#0f0f1a;color:#fff;cursor:pointer">📋 Copiar taula</button></div>';
-  html+='<div style="border-radius:12px;overflow:hidden;border:1px solid #f0f0f0;margin-bottom:20px"><table id="tutorTaula1" style="width:100%;border-collapse:collapse"><thead><tr style="background:#f9fafb"><th style="'+F+'padding:10px 14px;text-align:left;font-size:12px;font-weight:600;color:#6b7280">MATÈRIA</th><th style="'+F+'padding:10px 14px;text-align:center;font-size:12px;font-weight:600;color:#6b7280">SUSPESOS</th><th style="'+F+'padding:10px 14px;text-align:center;font-size:12px;font-weight:600;color:#6b7280">%</th></tr></thead><tbody>';
+  html+='<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px"><p style="'+F+'font-size:11px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:0.08em;margin:0">Per matèria</p><span style="display:flex;gap:6px"><button id="btnRot1" style="'+F+'padding:6px 12px;font-size:12px;font-weight:600;border:1.5px solid #e5e7eb;border-radius:8px;background:#fff;color:#374151;cursor:pointer">↔ Girar la taula</button><button id="btnCopy1" style="'+F+'padding:6px 12px;font-size:12px;font-weight:600;border:none;border-radius:8px;background:#0f0f1a;color:#fff;cursor:pointer">📋 Copiar taula</button></span></div>';
+  html+='<div style="border-radius:12px;overflow-x:auto;border:1px solid #f0f0f0;margin-bottom:20px"><table id="tutorTaula1" style="width:100%;border-collapse:collapse"><thead><tr style="background:#f9fafb"><th style="'+F+'padding:10px 14px;text-align:left;font-size:12px;font-weight:600;color:#6b7280">MATÈRIA</th><th style="'+F+'padding:10px 14px;text-align:center;font-size:12px;font-weight:600;color:#6b7280">SUSPESOS</th><th style="'+F+'padding:10px 14px;text-align:center;font-size:12px;font-weight:600;color:#6b7280">%</th></tr></thead><tbody>';
   for(let m in mm){let pct=(mm[m]/total*100).toFixed(1);let col=mm[m]===0?'#16a34a':mm[m]/total>0.3?'#dc2626':'#d97706';html+='<tr style="border-top:1px solid #f3f4f6"><td style="'+F+'padding:10px 14px;font-size:13px;color:#111">'+m+'</td><td style="'+F+'padding:10px 14px;text-align:center;font-size:14px;font-weight:700;color:'+col+'">'+mm[m]+'</td><td style="'+F+'padding:10px 14px;text-align:center;font-size:13px;color:#9ca3af">'+pct+'%</td></tr>';}
   html+='</tbody></table></div>';
-  html+='<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px"><p style="'+F+'font-size:11px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:0.08em;margin:0">Per nombre de suspesos</p><button id="btnCopy2" style="'+F+'padding:6px 12px;font-size:12px;font-weight:600;border:none;border-radius:8px;background:#0f0f1a;color:#fff;cursor:pointer">📋 Copiar taula</button></div>';
-  html+='<div style="border-radius:12px;overflow:hidden;border:1px solid #f0f0f0;margin-bottom:20px"><table id="tutorTaula2" style="width:100%;border-collapse:collapse"><thead><tr style="background:#f9fafb"><th style="'+F+'padding:10px 14px;text-align:center;font-size:12px;font-weight:600;color:#6b7280">MAT. SUSPESES</th><th style="'+F+'padding:10px 14px;text-align:center;font-size:12px;font-weight:600;color:#6b7280">Nº ALUMNES</th><th style="'+F+'padding:10px 14px;text-align:center;font-size:12px;font-weight:600;color:#6b7280">%</th></tr></thead><tbody>';
+  html+='<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px"><p style="'+F+'font-size:11px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:0.08em;margin:0">Per nombre de suspesos</p><span style="display:flex;gap:6px"><button id="btnRot2" style="'+F+'padding:6px 12px;font-size:12px;font-weight:600;border:1.5px solid #e5e7eb;border-radius:8px;background:#fff;color:#374151;cursor:pointer">↔ Girar la taula</button><button id="btnCopy2" style="'+F+'padding:6px 12px;font-size:12px;font-weight:600;border:none;border-radius:8px;background:#0f0f1a;color:#fff;cursor:pointer">📋 Copiar taula</button></span></div>';
+  html+='<div style="border-radius:12px;overflow-x:auto;border:1px solid #f0f0f0;margin-bottom:20px"><table id="tutorTaula2" style="width:100%;border-collapse:collapse"><thead><tr style="background:#f9fafb"><th style="'+F+'padding:10px 14px;text-align:center;font-size:12px;font-weight:600;color:#6b7280">MAT. SUSPESES</th><th style="'+F+'padding:10px 14px;text-align:center;font-size:12px;font-weight:600;color:#6b7280">Nº ALUMNES</th><th style="'+F+'padding:10px 14px;text-align:center;font-size:12px;font-weight:600;color:#6b7280">%</th></tr></thead><tbody>';
   for(let i=0;i<=10;i++){let n=Object.values(sm).filter(x=>x===i).length;let pct=total>0?((n/total)*100).toFixed(1):'0.0';let colorN=n===0?'#9ca3af':'#0f0f1a';html+='<tr style="border-top:1px solid #f3f4f6"><td style="'+F+'padding:10px 14px;text-align:center;font-size:13px;color:#111">'+i+'</td><td style="'+F+'padding:10px 14px;text-align:center;font-size:14px;font-weight:700;color:'+colorN+'">'+n+'</td><td style="'+F+'padding:10px 14px;text-align:center;font-size:13px;color:#9ca3af">'+pct+'%</td></tr>';}
   html+='<tr style="background:#f9fafb;border-top:1px solid #e5e7eb"><td style="'+F+'padding:10px 14px;text-align:center;font-size:13px;font-weight:700;color:#0f0f1a">Total</td><td style="'+F+'padding:10px 14px;text-align:center;font-size:14px;font-weight:700;color:#0f0f1a">'+total+'</td><td style="'+F+'padding:10px 14px;text-align:center;font-size:13px;color:#9ca3af">100%</td></tr></tbody></table></div>';
-  if(al&&al.length){html+='<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px"><p style="'+F+'font-size:11px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:0.08em;margin:0">Per alumne</p><button id="btnCopy3" style="'+F+'padding:6px 12px;font-size:12px;font-weight:600;border:none;border-radius:8px;background:#0f0f1a;color:#fff;cursor:pointer">📋 Copiar taula</button></div>';
-  html+='<div style="border-radius:12px;overflow:hidden;border:1px solid #f0f0f0;margin-bottom:20px"><table id="tutorTaula3" style="width:100%;border-collapse:collapse"><thead><tr style="background:#f9fafb"><th style="'+F+'padding:10px 14px;text-align:center;font-size:12px;font-weight:600;color:#6b7280">ALUMNE</th><th style="'+F+'padding:10px 14px;text-align:center;font-size:12px;font-weight:600;color:#6b7280">Nº SUSP.</th><th style="'+F+'padding:10px 14px;text-align:left;font-size:12px;font-weight:600;color:#6b7280">MATÈRIES SUSPESES</th></tr></thead><tbody>';
+  if(al&&al.length){html+='<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px"><p style="'+F+'font-size:11px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:0.08em;margin:0">Per alumne</p><span style="display:flex;gap:6px"><button id="btnRot3" style="'+F+'padding:6px 12px;font-size:12px;font-weight:600;border:1.5px solid #e5e7eb;border-radius:8px;background:#fff;color:#374151;cursor:pointer">↔ Girar la taula</button><button id="btnCopy3" style="'+F+'padding:6px 12px;font-size:12px;font-weight:600;border:none;border-radius:8px;background:#0f0f1a;color:#fff;cursor:pointer">📋 Copiar taula</button></span></div>';
+  html+='<div style="border-radius:12px;overflow-x:auto;border:1px solid #f0f0f0;margin-bottom:20px"><table id="tutorTaula3" style="width:100%;border-collapse:collapse"><thead><tr style="background:#f9fafb"><th style="'+F+'padding:10px 14px;text-align:center;font-size:12px;font-weight:600;color:#6b7280">ALUMNE</th><th style="'+F+'padding:10px 14px;text-align:center;font-size:12px;font-weight:600;color:#6b7280">Nº SUSP.</th><th style="'+F+'padding:10px 14px;text-align:left;font-size:12px;font-weight:600;color:#6b7280">MATÈRIES SUSPESES</th></tr></thead><tbody>';
   al.forEach(a=>{let col=a.count===0?'#16a34a':a.count>3?'#dc2626':'#d97706';html+='<tr style="border-top:1px solid #f3f4f6"><td style="'+F+'padding:10px 14px;text-align:center;font-size:13px;color:#111">'+a.num+'</td><td style="'+F+'padding:10px 14px;text-align:center;font-size:14px;font-weight:700;color:'+col+'">'+a.count+'</td><td style="'+F+'padding:10px 14px;font-size:12px;color:#374151;line-height:1.7">'+a.mats.join('<br>')+'</td></tr>';});
   html+='</tbody></table></div>';}
   html+='</div>';
   let ov=cO('<div style="max-height:80vh;overflow-y:auto;padding-right:4px">'+html+'</div>',o=>_rm(o));
+  // Girar una taula: files <-> columnes (es copia tal com es veu)
+  const boxR=ov.firstChild,mw0=boxR.style.maxWidth;
+  function giraTaula(t){
+    const M=Array.from(t.rows).map(tr=>Array.from(tr.cells)),C=Math.max(...M.map(r=>r.length));
+    const tb=_c('tbody');
+    for(let j=0;j<C;j++){
+      const tr=_c('tr');tr.style.cssText=j?'border-top:1px solid #f3f4f6;':'background:#f9fafb;';
+      for(let i=0;i<M.length;i++){
+        const src=M[i][j],td=_c(i===0?'th':'td');
+        if(src){td.innerHTML=src.innerHTML;td.style.cssText=src.style.cssText;}
+        td.style.whiteSpace='nowrap';
+        if(i===0){td.style.textAlign='left';td.style.background='#f9fafb';td.style.fontSize='12px';td.style.fontWeight='600';td.style.color='#6b7280';td.style.textTransform='uppercase';}
+        else if(j===0){td.style.background='#f9fafb';td.style.fontWeight='700';}
+        else if(src&&src.parentNode.style.background)td.style.background='#f9fafb';
+        tr.ap(td);
+      }
+      tb.ap(tr);
+    }
+    t.innerHTML='';t.ap(tb);
+  }
+  function ajustaAmplada(){
+    const any=[1,2,3].some(n=>{const t=_id('tutorTaula'+n);return t&&t._girada;});
+    boxR.style.maxWidth=any?'94vw':mw0;boxR.style.width=any?'min(1100px,94vw)':'';
+  }
+  [1,2,3].forEach(n=>{
+    const b=_id('btnRot'+n),t=_id('tutorTaula'+n);if(!b||!t)return;
+    b.onclick=()=>{
+      if(t._girada){t.innerHTML=t._orig;t._girada=false;b.textContent='↔ Girar la taula';}
+      else{t._orig=t.innerHTML;giraTaula(t);t._girada=true;b.textContent='↕ Tornar a vertical';}
+      ajustaAmplada();
+    };
+  });
   _st(()=>{let b=_id('btnTancarRes');if(b)b.onclick=()=>{if(ov.parentNode)_rm(ov);};let c1=_id('btnCopy1');if(c1)c1.onclick=()=>cT('tutorTaula1',c1);let c2=_id('btnCopy2');if(c2)c2.onclick=()=>cT('tutorTaula2',c2);let c3=_id('btnCopy3');if(c3)c3.onclick=()=>cT('tutorTaula3',c3);},100);}
 
   function dC(callback){let html='<div style="'+F+'text-align:center"><div style="width:52px;height:52px;background:#0f0f1a;border-radius:16px;display:inline-flex;align-items:center;justify-content:center;font-size:26px;margin-bottom:16px">💬</div><h2 style="'+F+'margin:0 0 6px;font-size:21px;font-weight:700;color:#0f0f1a">Comentaris</h2><p style="'+F+'margin:0 0 20px;font-size:13px;color:#9ca3af">Enganxa els comentaris (un per alumne)</p><textarea id="tutorTA" placeholder="Comentari alumne 1&#10;Comentari alumne 2&#10;Comentari alumne 3&#10;..." style="'+F+'width:100%;height:160px;border:1.5px solid #e5e7eb;border-radius:12px;padding:14px;font-size:13px;color:#0f0f1a;resize:vertical;outline:none;line-height:1.6"></textarea><div style="display:flex;gap:10px;margin-top:16px"><button id="btnCancelCom" style="'+F+'flex:1;padding:13px;font-size:14px;font-weight:600;border:1.5px solid #e5e7eb;border-radius:12px;background:transparent;color:#9ca3af;cursor:pointer">Cancel·lar</button><button id="btnOkCom" style="'+F+'flex:2;padding:13px;font-size:14px;font-weight:600;border:none;border-radius:12px;background:#0f0f1a;color:#fff;cursor:pointer">Continuar →</button></div></div>';
@@ -360,23 +392,49 @@ var _st=(...a)=>setTimeout(...a);
     const colsT=()=>'34px '+(modeNoms?'1.4fr ':'')+(nv===1?'2.4fr':'2fr .7fr');
     const RC=()=>'display:grid;grid-template-columns:'+colsT()+';';
     const wrap=_c('div');wrap.style.cssText='text-align:left;margin:0 0 14px;';
-    const bar=_c('div');bar.style.cssText='display:flex;gap:8px;align-items:center;justify-content:space-between;margin-bottom:8px;';
+    const bar=_c('div');bar.style.cssText='display:flex;gap:8px;align-items:center;justify-content:space-between;margin-bottom:8px;flex-wrap:wrap;';
     const seg=_c('div');seg.style.cssText='display:flex;border:1.5px solid #e5e7eb;border-radius:8px;overflow:hidden;';
     const bOrd=_c('button'),bNom=_c('button');
     bOrd.textContent='📋 Per ordre dels alumnes';bNom.textContent='👤 Amb noms';
     [bOrd,bNom].forEach(b=>{b.style.cssText=F+'padding:7px 12px;font-size:12px;font-weight:500;border:none;cursor:pointer;';seg.ap(b);});
-    const clr=_c('button');clr.textContent='🗑 Esborrar tot';clr.style.cssText=F+'padding:7px 12px;font-size:12px;font-weight:500;border:1.5px solid #e5e7eb;border-radius:8px;background:#fff;color:#c0392b;cursor:pointer;';
-    bar.ap(seg);bar.ap(clr);wrap.ap(bar);
+    const clr=_c('button');clr.textContent='🗑 Esborrar tot';clr.style.cssText=F+'padding:7px 12px;font-size:12px;font-weight:500;border:1.5px solid #e5e7eb;border-radius:8px;background:#fff;color:#c0392b;cursor:pointer;white-space:nowrap;';
+    const rot=_c('button');rot.style.cssText=F+'padding:7px 12px;font-size:12px;font-weight:500;border:1.5px solid #e5e7eb;border-radius:8px;background:#fff;color:#374151;cursor:pointer;white-space:nowrap;';
+    const bdr=_c('div');bdr.style.cssText='display:flex;gap:6px;';bdr.ap(rot);bdr.ap(clr);
+    bar.ap(seg);bar.ap(bdr);wrap.ap(bar);
     const gridEl=_c('div');gridEl.style.cssText='border:1.5px solid #e5e7eb;border-radius:10px;overflow:hidden;margin-bottom:6px;';
     const gHead=_c('div');gHead.style.cssText=F+'background:#f9fafb;border-bottom:1px solid #e5e7eb;font-size:11px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:0.05em;';
     const hCells=[];
     ['#','Nom alumne'].concat(labels).forEach((t,ix)=>{const h=_c('div');h.textContent=t;h.style.cssText='padding:8px 10px;'+(ix?'border-left:1px solid #f0f0f0;':'');hCells.push(h);gHead.ap(h);});
     const gBody=_c('div');gBody.style.cssText='max-height:240px;overflow-y:auto;';
     gridEl.ap(gHead);gridEl.ap(gBody);wrap.ap(gridEl);
+    // en horitzontal: cada columna és un alumne i cada fila un camp (les etiquetes van a la primera columna)
+    const LC='padding:8px 10px;font-size:11px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:0.05em;background:#f9fafb;align-items:center;display:none;';
+    const corner=_c('div');corner.style.cssText=LC;corner.textContent='#';gBody.ap(corner);
+    const labelCells=['Nom alumne'].concat(labels).map(t=>{const d=_c('div');d.textContent=t;d.style.cssText=LC+'border-top:1px solid #f0f0f0;';gBody.ap(d);return d;});
+    const box0=ov.firstChild,w0=box0?box0.style.width:'',mw0=box0?box0.style.maxWidth:'';
+    function layout(){
+      const vr=c=>(modeNoms?c:c-1)+2;
+      if(!horiz){
+        gHead.style.display='grid';gBody.style.display='block';gBody.style.gridTemplateColumns='';gBody.style.overflowX='hidden';gBody.style.maxHeight='240px';
+        corner.style.display='none';labelCells.forEach(d=>{d.style.display='none';});
+        rows.forEach((tr,i)=>{tr.style.display='grid';tr.style.gridTemplateColumns=colsT();tr.style.borderTop=i?'1px solid #f0f0f0':'none';tr.firstChild.style.gridRow='';tr.firstChild.style.gridColumn='';tr._c.forEach(x=>{x.style.gridRow='';x.style.gridColumn='';x.style.borderTop='none';});});
+        if(box0){box0.style.width=w0;box0.style.maxWidth=mw0;}
+        return;
+      }
+      gHead.style.display='none';gBody.style.display='grid';gBody.style.overflowX='auto';gBody.style.maxHeight='none';
+      gBody.style.gridTemplateColumns='104px repeat('+rows.length+',minmax(116px,1fr))';
+      corner.style.display='flex';corner.style.gridRow='1';corner.style.gridColumn='1';
+      labelCells.forEach((d,c)=>{d.style.display=(c===0&&!modeNoms)?'none':'flex';d.style.gridColumn='1';d.style.gridRow=String(vr(c));});
+      rows.forEach((tr,i)=>{tr.style.display='contents';const n=tr.firstChild;n.style.gridRow='1';n.style.gridColumn=String(i+2);tr._c.forEach((x,c)=>{x.style.gridRow=String(vr(c));x.style.gridColumn=String(i+2);x.style.borderTop='1px solid #f0f0f0';});});
+      if(box0){box0.style.width='min(920px,94vw)';box0.style.maxWidth='94vw';}
+    }
+    function pintaRot(){rot.textContent=horiz?'↕ Veure en vertical':'↔ Veure en horitzontal';rot.title=horiz?'Un alumne per fila':'Un alumne per columna';}
+    rot.onclick=()=>{horiz=!horiz;pintaRot();pinta();};
     const hint=_c('p');hint.style.cssText=F+'font-size:11px;color:#9ca3af;margin:0 0 6px;line-height:1.5;';wrap.ap(hint);
     const info=_c('div');info.style.cssText=F+'font-size:12px;color:#6b7280;min-height:16px;';wrap.ap(info);
     tas[0].parentNode.insertBefore(wrap,tas[0]);
     const rows=[];
+    let horiz=false;
     const neteja=v=>String(v||'').replace(/[\t\r\n]+/g,' ').trim();
     function focusCell(r,c){while(rows.length<=r)addRow();const inp=rows[r]._c[c];if(inp&&inp.style.display!=='none'){inp.focus();inp.select();}}
     function addRow(){
@@ -391,7 +449,11 @@ var _st=(...a)=>setTimeout(...a);
         inp.addEventListener('paste',gPaste);
         inp.addEventListener('keydown',e=>{
           const rr=rows.indexOf(tr);
-          if(e.key==='Enter'||e.key==='ArrowDown'){e.preventDefault();focusCell(rr+1,c);}
+          if(horiz){
+            if(e.key==='Enter'){e.preventDefault();focusCell(rr+1,c);}
+            else if(e.key==='ArrowDown'){e.preventDefault();focusCell(rr,c+1);}
+            else if(e.key==='ArrowUp'&&c>0){e.preventDefault();focusCell(rr,c-1);}
+          }else if(e.key==='Enter'||e.key==='ArrowDown'){e.preventDefault();focusCell(rr+1,c);}
           else if(e.key==='ArrowUp'&&rr>0){e.preventDefault();focusCell(rr-1,c);}
         });
         tr.ap(inp);tr._c.push(inp);
@@ -402,7 +464,9 @@ var _st=(...a)=>setTimeout(...a);
       const txt=(e.clipboardData||window.clipboardData).getData('text');
       if(!/[\t\n\r]/.test(txt))return;
       e.preventDefault();
-      const data=netejaExcel(txt).split('\n').map(l=>l.split('\t'));
+      let data=netejaExcel(txt).split('\n').map(l=>l.split('\t'));
+      // en horitzontal, una fila d'Excel són alumnes diferents: es transposa abans d'enganxar
+      if(horiz){const W=data.reduce((m,p)=>Math.max(m,p.length),0),T=[];for(let j=0;j<W;j++)T.push(data.map(p=>p[j]===undefined?'':p[j]));data=T;}
       while(data.length&&data[data.length-1].every(x=>!x.trim()))data.pop();
       let c0=+e.target.dataset.c,auto=false;
       const maxC=data.reduce((m,p)=>Math.max(m,p.length),0);
@@ -424,6 +488,7 @@ var _st=(...a)=>setTimeout(...a);
       let blank=0;
       for(let i=rows.length-1;i>=0;i--){const tr=rows[i];if(tr._c.slice(1).every(x=>!x.value.trim())&&(!modeNoms||!tr._c[0].value.trim()))blank++;else break;}
       while(blank<2){addRow();blank++;}
+      layout();
       const L=llegeix();
       tas.forEach((t,j)=>{
         if(modeNoms)t.value=L.filter(o=>o.nom&&o.v[j]).map(o=>o.nom+'\t'+o.v[j]).join('\n');
@@ -444,6 +509,8 @@ var _st=(...a)=>setTimeout(...a);
         ?"💡 Escriu o enganxa el nom i el valor (des d'Excel o Sheets, cap a la dreta i cap avall). Els alumnes s'identifiquen a la pantalla mentre es processa, en qualsevol ordre; al final et diu quins noms no ha trobat."
         :"💡 Enganxa els valors des d'Excel o Sheets: la fila 1 és el primer alumne de la pantalla, la 2 el segon, etc. Si copies també els noms, passa sol a «Amb noms».";
       rows.forEach(tr=>{tr.style.gridTemplateColumns=colsT();tr._c[0].style.display=modeNoms?'':'none';});
+      if(horiz)hint.textContent+=' Taula girada: cada columna és un alumne, i en enganxar una fila d\'Excel s\'omple cap a la dreta.';
+      layout();
     }
     function setMode(m,sense){
       if(m===modeNoms)return;
@@ -455,7 +522,7 @@ var _st=(...a)=>setTimeout(...a);
     bOrd.onclick=()=>setMode(false);bNom.onclick=()=>setMode(true);
     clr.onclick=()=>{rows.forEach(tr=>tr._c.forEach(x=>{x.value='';}));sync();};
     for(let i=0;i<8;i++)addRow();
-    pinta();sync();
+    pintaRot();pinta();sync();
     // no deixa continuar si, en mode amb noms, hi ha files amb valor però sense nom
     ov.querySelectorAll('button[id^="btnOk"]').forEach(b=>b.addEventListener('click',e=>{
       if(modeNoms&&sinNom>0){e.stopImmediatePropagation();e.preventDefault();info.style.color='#dc2626';info.textContent='⚠️ Falta el nom a '+sinNom+(sinNom>1?' files':' fila')+' amb dades. Posa-hi el nom o passa a «Per ordre dels alumnes».';}

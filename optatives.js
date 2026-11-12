@@ -260,6 +260,57 @@
     }
     return { list: [], sc: null };
   }
+  function findOpt(c, g) {
+    const code = nrmQ(g).toLowerCase();
+    return Array.from(c.el.options).find((o) => {
+      let cd = o.value.replace(/^string:/, "").toLowerCase();
+      return cd && (cd === code || norm(o.text) === norm(g) || norm(o.text.split("-")[0]) === norm(g));
+    });
+  }
+  // Estat de la nota nova respecte a la del camp: cap | nova | igual | sobre (cur) | invalida
+  function estatNota(r, g) {
+    const c = ctl(r);
+    if (!c || !g || g === "-") return { k: "cap" };
+    if (c.k === "sel") {
+      const nou = findOpt(c, g);
+      if (!nou) return { k: "invalida" };
+      const o = c.el.options[c.el.selectedIndex];
+      const v = o ? o.value.replace(/^string:/, "") : "";
+      if (!o || !v || v === "?") return { k: "nova" };
+      if (o.index === nou.index) return { k: "igual" };
+      return { k: "sobre", cur: o.text.trim() || v };
+    }
+    const nv = g.replace(",", ".").trim();
+    if (!/^\d+(\.\d+)?$/.test(nv)) return { k: "invalida" };
+    const cur = String(c.el.value || "").trim();
+    if (!cur) return { k: "nova" };
+    if (parseFloat(cur.replace(",", ".")) === parseFloat(nv)) return { k: "igual" };
+    return { k: "sobre", cur: cur };
+  }
+  // Nota actual del camp si és diferent de la nova: retorna el text actual, o null si no cal preguntar
+  function notaDiferent(r, g) {
+    const e = estatNota(r, g);
+    return e.k === "sobre" ? e.cur : null;
+  }
+  function studDe(row, studs) {
+    const id = row.querySelector("td:nth-child(1)").innerText.trim();
+    const rk = toks([2, 3, 4].map((i) => row.querySelector("td:nth-child(" + i + ")").innerText).join(" "))
+      .sort()
+      .join(" ");
+    return (
+      (id && studs.find((x) => x.idRalc != null && String(x.idRalc).trim() === id)) ||
+      studs.find((x) => toks([x.cognom1, x.cognom2, x.nom].join(" ")).sort().join(" ") === rk) ||
+      null
+    );
+  }
+  function estatComent(s2, c) {
+    if (!c || c === "-") return { k: "cap" };
+    if (!s2) return { k: "desconegut" };
+    const cur = String(s2.comentaris || "").trim();
+    if (!cur) return { k: "nova" };
+    if (cur === c) return { k: "igual" };
+    return { k: "sobre", cur: cur };
+  }
   async function setGrade(r, d, gradeErr) {
     const c = ctl(r);
     if (!c) return;
@@ -353,7 +404,10 @@
   }
   // Diàleg: comentaris que ja existeixen. Cada caixa blava es clica per triar: verd = sobreescriure, vermell = no sobreescriure.
   // Retorna una llista de booleans (true = sobreescriure). Les caixes que queden blaves (sense decidir) es respecten.
-  async function decideOverwrite(code, items) {
+  async function decideOverwrite(code, items, what) {
+    what = what || 'comentari';
+    if (owAuto) return items.map(() => true);
+    const W = what === 'nota' ? { t: 'Notes ja existents', s: 'una nota', p: 'notes' } : { t: 'Comentaris ja existents', s: 'un comentari', p: 'comentaris' };
     const ST = {
       0: { bg: "#dbeafe", bd: "#2563eb", tx: "#1e3a8a", lb: "🔵 Sense decidir · es respecta" },
       1: { bg: "#dcfce7", bd: "#16a34a", tx: "#14532d", lb: "🟢 Es sobreescriurà" },
@@ -376,15 +430,16 @@
     const btn = (cls, bg, col, bd, t) =>
       '<button class="' + cls + '" style="' + F + "padding:9px 12px;font-size:12px;font-weight:600;border-radius:10px;cursor:pointer;background:" + bg + ";color:" + col + ";border:1.5px solid " + bd + '">' + t + "</button>";
     const h =
-      '<div style="' + F + '"><h2 style="' + F + 'margin:0 0 4px;font-size:19px;font-weight:700;color:#0f0f1a">Comentaris ja existents</h2>' +
+      '<div style="' + F + '"><h2 style="' + F + 'margin:0 0 4px;font-size:19px;font-weight:700;color:#0f0f1a">' + W.t + '</h2>' +
       '<p style="' + F + 'margin:0 0 14px;font-size:13px;color:#6b7280;line-height:1.5">Grup <b>' + esc(code) + "</b>: " +
-      (items.length > 1 ? "aquests alumnes ja tenen" : "aquest alumne ja té") +
-      " comentari. Clica la caixa per triar: <b style='color:#16a34a'>verd</b> = sobreescriure, <b style='color:#dc2626'>vermell</b> = no sobreescriure. Les que quedin <b style='color:#2563eb'>blaves</b> no es toquen.</p>" +
+      (items.length > 1 ? "aquests alumnes ja tenen " : "aquest alumne ja té ") + W.s +
+      " diferent. Clica la caixa per triar: <b style='color:#16a34a'>verd</b> = sobreescriure, <b style='color:#dc2626'>vermell</b> = no sobreescriure. Les que quedin <b style='color:#2563eb'>blaves</b> no es toquen.</p>" +
       '<div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap">' +
       btn("optOwAll", "#dcfce7", "#14532d", "#16a34a", "Sobreescriure tots") +
       btn("optOwNone", "#fee2e2", "#7f1d1d", "#dc2626", "No sobreescriure cap") +
       '</div><div style="max-height:340px;overflow-y:auto;padding-right:4px">' + rowsH + "</div>" +
-      '<div class="optOwInfo" style="font-size:12px;color:#6b7280;text-align:center;margin:10px 0"></div>' +
+      '<div class="optOwInfo" style="font-size:12px;color:#6b7280;text-align:center;margin:10px 0 6px"></div>' +
+      '<label style="display:flex;align-items:center;gap:8px;font-size:12px;color:#374151;margin:0 0 12px;cursor:pointer"><input type="checkbox" class="optOwAuto" style="accent-color:#16a34a;width:15px;height:15px"><span>No tornar a preguntar: <b>sobreescriure-ho tot</b> als grups següents</span></label>' +
       '<button class="optOwGo" style="' + F + 'width:100%;padding:13px;font-size:14px;font-weight:600;border:none;border-radius:12px;background:#0f0f1a;color:#fff;cursor:pointer">Continuar →</button></div>';
     const m = showModal(h);
     let done = false;
@@ -419,6 +474,7 @@
     };
     m.box.querySelector(".optOwGo").onclick = () => {
       done = true;
+      if (m.box.querySelector(".optOwAuto").checked) owAuto = true;
       m.ov.remove();
     };
     paint();
@@ -497,6 +553,46 @@
   }
   function summary(res, dry, nf) {
     const col = (c) => (c === "ok" ? "#16a34a" : c === "warn" ? "#d97706" : "#dc2626");
+    const dgHtml = (g) => {
+      if (!dry || !g.diag || !g.diag.length) return "";
+      const nom = (e) =>
+        "<b>" + esc(e.name) + "</b>" +
+        (norm(e.name).split(" ").sort().join(" ") === norm(e.txt).split(" ").sort().join(" ") ? "" : ' <span style="color:#9ca3af">→ ' + esc(e.txt) + "</span>");
+      const lines = g.diag.map((e) => {
+        let col = "#16a34a",
+          p = [];
+        const n = e.nota,
+          c = e.cm;
+        if (e.blk) {
+          p.push("camp bloquejat: no es pot modificar");
+          col = "#dc2626";
+        } else if (n.k === "nova") p.push("nota " + esc(e.grade) + " (nova)");
+        else if (n.k === "sobre") {
+          p.push("nota " + esc(n.cur) + " → " + esc(e.grade) + " (sobreescriuria)");
+          col = "#d97706";
+        } else if (n.k === "igual") p.push("nota " + esc(e.grade) + " (ja hi és)");
+        else if (n.k === "invalida") {
+          p.push("nota «" + esc(e.grade) + "» no vàlida per a aquest camp");
+          col = "#dc2626";
+        }
+        if (c.k === "nova") p.push("comentari nou");
+        else if (c.k === "sobre") {
+          p.push("comentari existent «" + esc(c.cur.length > 40 ? c.cur.slice(0, 40) + "…" : c.cur) + "» (sobreescriuria)");
+          if (col !== "#dc2626") col = "#d97706";
+        } else if (c.k === "igual") p.push("comentari igual a l'existent");
+        else if (c.k === "desconegut") p.push("comentari: no puc llegir l'actual");
+        if (!p.length) p.push("res a escriure (nota i comentari buits)");
+        return '<div style="margin-top:4px;font-size:12px"><span style="color:' + col + '">●</span> ' + nom(e) + "<br>&nbsp;&nbsp;&nbsp;" + p.join(" · ") + "</div>";
+      });
+      return (
+        '<div style="margin-top:6px;border-top:1px dashed #e5e7eb;padding-top:4px">' +
+        lines.join("") +
+        (g.noLlista && g.noLlista.length
+          ? '<div style="margin-top:8px;font-size:12px;color:#6b7280">👥 Alumnes del grup que no surten a la teva llista (' + g.noLlista.length + "): " + esc(g.noLlista.join(" · ")) + "</div>"
+          : "") +
+        "</div>"
+      );
+    };
     let items = res.groups.map(
       (g) =>
         "<b>" +
@@ -514,19 +610,40 @@
         (g.fmt ? " · " + esc(g.fmt) : "") +
         (g.subj ? " · " + esc(g.subj) : "") +
         (g.cm ? " · " + esc(g.cm) : "") +
-        "</span>",
+        "</span>" +
+        dgHtml(g),
     );
     let h =
       '<div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:20px"><div><h2 style="margin:0 0 4px;font-size:20px;font-weight:700;color:#0f0f1a">Resum' +
-      (dry ? " · mode prova" : "") +
+      (dry ? " · diagnòstic" : "") +
       '</h2><p style="margin:0;font-size:13px;color:#9ca3af">' +
       res.groups.length +
       ' grups processats</p></div><button class="optClose" style="' +
       F +
       'width:34px;height:34px;border-radius:50%;border:none;background:#f3f4f6;color:#6b7280;font-size:20px;cursor:pointer;line-height:1">×</button></div>';
-    if (dry)
+    if (dry) {
+      const T = { nN: 0, nS: 0, nI: 0, cN: 0, cS: 0, cI: 0, inv: 0, blk: 0, tot: 0 };
+      res.groups.forEach((g) => {
+        T.blk += g.blk || 0;
+        T.tot += g.found || 0;
+        (g.diag || []).forEach((e) => {
+          if (e.nota.k === "nova") T.nN++;
+          else if (e.nota.k === "sobre") T.nS++;
+          else if (e.nota.k === "igual") T.nI++;
+          else if (e.nota.k === "invalida") T.inv++;
+          if (e.cm.k === "nova") T.cN++;
+          else if (e.cm.k === "sobre") T.cS++;
+          else if (e.cm.k === "igual") T.cI++;
+        });
+      });
       h +=
-        '<div style="background:#fff8e1;border:1.5px solid #f5a623;border-radius:12px;padding:12px 16px;margin-bottom:18px;font-size:13px;color:#7a5c00;line-height:1.5">⚠️ Mode prova: no s\'ha canviat ni desat res.</div>';
+        '<div style="background:#eff6ff;border:1.5px solid #93c5fd;border-radius:12px;padding:12px 16px;margin-bottom:18px;font-size:13px;color:#1e3a8a;line-height:1.6">🩺 <b>Diagnòstic: no s\'ha canviat ni desat res.</b><br>' +
+        T.tot + " alumnes trobats. Escriuria <b>" + T.nN + "</b> notes noves i <b>" + T.cN + "</b> comentaris nous." +
+        "<br>Sobreescriuria <b>" + T.nS + "</b> notes i <b>" + T.cS + "</b> comentaris que ja hi són" +
+        (T.nI + T.cI ? " (" + (T.nI + T.cI) + " ja eren iguals)" : "") + "." +
+        (T.inv || T.blk ? '<br><b style="color:#dc2626">Problemes: ' + (T.inv ? T.inv + " notes no vàlides" : "") + (T.inv && T.blk ? " · " : "") + (T.blk ? T.blk + " camps bloquejats" : "") + "</b>" : "") +
+        "</div>";
+    }
     h += sec("Per grup", items.length ? items : ["Cap grup processat"]);
     const lst = (t, a) => {
       if (a.length)
@@ -562,9 +679,10 @@
         '<div class="optFixMsg" style="font-size:12px;color:#dc2626;min-height:16px;text-align:center"></div><p style="margin:0 0 8px;font-size:12px;color:#6b7280;line-height:1.5">Les caselles marcades són coincidències molt probables. Revisa-les, desmarca les que no ho siguin i prem el botó.</p><button class="optFixGo" style="' +
         F +
         'width:100%;padding:13px;margin-bottom:16px;font-size:14px;font-weight:600;border:none;border-radius:12px;background:#7a4e9e;color:#fff;cursor:pointer">' +
-        (dry ? "Provar amb els alumnes marcats" : "Aplicar als alumnes marcats") +
+        (dry ? "Diagnosticar amb els alumnes marcats" : "Aplicar als alumnes marcats") +
         "</button>";
     lst("Notes no assignades", res.gradeErr);
+    lst("Ja tenien nota (no s'ha sobreescrit)", res.gKept);
     lst("Ja tenien comentari (no s'ha sobreescrit)", res.existing);
     lst("Comentaris fallits", res.failed);
     h +=
@@ -668,6 +786,7 @@ function assignaNoms(files,entrades){
     return { S: toks(g(2) + " " + g(3)), N: toks(g(4)) };
   }
   let lastChosen = null;
+  let owAuto = false; // true = sobreescriu notes i comentaris existents sense preguntar
   let aturat = false;
   async function run(text, dry, codes) {
     aturat = false;
@@ -687,7 +806,7 @@ function assignaNoms(files,entrades){
         comment: p.slice(2).join(" ").trim(),
         done: false,
       }));
-    let res = { groups: [], issues: [], gradeErr: [], existing: [], failed: [] },
+    let res = { groups: [], issues: [], gradeErr: [], existing: [], gKept: [], failed: [] },
       chosen = lastChosen,
       n = 0;
     const vistos = [];
@@ -799,6 +918,46 @@ function assignaNoms(files,entrades){
         const v = vistos.find((q) => q.row === r);
         if (v && asg[ri]) v.usat = true;
       });
+      const keepG = new Set();
+      g.diag = [];
+      const rowTxt = (r) =>
+        [2, 3, 4]
+          .map((i) => {
+            const td = r.querySelector("td:nth-child(" + i + ")");
+            return td ? td.innerText.trim() : "";
+          })
+          .join(" ")
+          .replace(/\s+/g, " ")
+          .trim();
+      let studD = null;
+      if (dry) {
+        const l0 = getStuds().list;
+        studD = l0.length ? l0 : null;
+        g.noLlista = rows.filter((r, ri) => !asg[ri]).map(rowTxt);
+        g.dadesAng = !!studD;
+      }
+      if (!dry) {
+        const gc = [];
+        for (let ri = 0; ri < rows.length; ri++) {
+          const d0 = asg[ri];
+          if (!d0 || ctl(rows[ri]).el.disabled) continue;
+          const cu = notaDiferent(rows[ri], d0.grade);
+          if (cu != null) gc.push({ ri: ri, name: d0.raw, cur: cu, neu: d0.grade });
+        }
+        if (gc.length) {
+          const dg = await decideOverwrite(
+            code,
+            gc.map((x) => ({ name: x.name, cur: x.cur, neu: x.neu })),
+            "nota",
+          );
+          gc.forEach((x, i) => {
+            if (!dg[i]) {
+              keepG.add(x.ri);
+              res.gKept.push(x.name);
+            }
+          });
+        }
+      }
       for (let ri = 0; ri < rows.length; ri++) {
         const r = rows[ri];
         let d = asg[ri];
@@ -807,11 +966,16 @@ function assignaNoms(files,entrades){
         g.found++;
         if (ctl(r).el.disabled) {
           g.blk = (g.blk || 0) + 1;
+          if (dry) g.diag.push({ name: d.raw, txt: rowTxt(r), blk: true, nota: { k: "cap" }, cm: { k: "cap" } });
           res.issues.push(code + ": " + d.raw + " trobat, però el camp està bloquejat");
           continue;
         }
-        if (dry) continue;
-        if (d.grade && d.grade !== "-") {
+        if (dry) {
+          const e = { name: d.raw, txt: rowTxt(r), nota: estatNota(r, d.grade), cm: estatComent(studD ? studDe(r, studD) : null, d.comment), grade: d.grade, comment: d.comment };
+          g.diag.push(e);
+          continue;
+        }
+        if (d.grade && d.grade !== "-" && !keepG.has(ri)) {
           const sg = await setGrade(r, d, res.gradeErr);
           if (sg) pend.push(sg);
         }
@@ -902,7 +1066,7 @@ function assignaNoms(files,entrades){
           g.cls = "warn";
         }
       } else {
-        g.st = g.found ? "prova: alumnes trobats" : "prova: cap alumne de la llista";
+        g.st = g.found ? "diagnòstic: " + g.found + " alumne" + (g.found > 1 ? "s" : "") + " de la teva llista trobat" + (g.found > 1 ? "s" : "") : "diagnòstic: cap alumne de la llista";
         g.cls = g.found ? "ok" : "warn";
       }
       if (!(await goList())) {
@@ -962,14 +1126,15 @@ function assignaNoms(files,entrades){
     const sm =
       F +
       "padding:5px 12px;font-size:12px;font-weight:600;border:1.5px solid #e5e7eb;border-radius:8px;background:transparent;color:#6b7280;cursor:pointer;";
+    const smRed = sm.replace("color:#6b7280", "color:#c0392b");
     const H =
       '<div class="optMain"><div style="text-align:center;margin-bottom:22px"><div style="width:52px;height:52px;background:#0f0f1a;border-radius:16px;display:inline-flex;align-items:center;justify-content:center;font-size:26px;margin-bottom:14px">🗂️</div><h2 style="margin:0 0 4px;font-size:21px;font-weight:700;color:#0f0f1a">Notes i comentaris per grups</h2><p style="margin:0 0 10px;font-size:13px;color:#9ca3af">Una línia per alumne: Nom, Nota i Comentari</p><span style="display:inline-block;background:#f0f4ff;color:#3d6b9e;border:1px solid #c5d5f0;border-radius:20px;padding:3px 10px;font-size:11px;font-weight:500">' +
       evalTxt() +
       '</span></div><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">' +
       lab("1 · Llista d'alumnes") +
       '<button class="optClr" style="' +
-      sm +
-      '">Esborrar</button></div><div class="optGrid" style="border:1.5px solid #e5e7eb;border-radius:12px;overflow:hidden"></div><p style="margin:6px 0 0;font-size:11px;color:#9ca3af;line-height:1.5">💡 Enganxa des de qualsevol cel·la: s\'omple cap a la dreta i cap avall, com un full de càlcul. Si comences a Nota, el Nom no es toca.</p><textarea class="optTA" hidden placeholder="Garcia López Joan  [tab]  AN  [tab]  Comentari&#10;Puig Martí Anna  [tab]  AE  [tab]  Comentari" style="' +
+      smRed +
+      '">🗑 Esborrar tot</button></div><div class="optGrid" style="border:1.5px solid #e5e7eb;border-radius:12px;overflow:hidden"></div><p style="margin:6px 0 0;font-size:11px;color:#9ca3af;line-height:1.5">💡 Enganxa des de qualsevol cel·la: s\'omple cap a la dreta i cap avall, com un full de càlcul. Si comences a Nota, el Nom no es toca.</p><textarea class="optTA" hidden placeholder="Garcia López Joan  [tab]  AN  [tab]  Comentari&#10;Puig Martí Anna  [tab]  AE  [tab]  Comentari" style="' +
       F +
       'width:100%;height:150px;border:1.5px solid #e5e7eb;border-radius:12px;padding:14px;font-size:13px;color:#0f0f1a;resize:vertical;outline:none;line-height:1.6"></textarea><div class="optCnt" style="font-size:12px;color:#9ca3af;min-height:18px;margin:6px 0 14px"></div><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">' +
       lab("2 · Grups a recórrer") +
@@ -977,7 +1142,7 @@ function assignaNoms(files,entrades){
       sm +
       '">Tots</button><button class="optNone" style="' +
       sm +
-      '">Cap</button></div></div><div class="optG" style="max-height:200px;overflow-y:auto;border:1px solid #f0f0f0;border-radius:12px"></div><label style="display:flex;align-items:center;gap:10px;margin-top:14px;padding:12px 14px;border:1.5px solid #e5e7eb;border-radius:12px;cursor:pointer;font-size:13px;color:#374151"><input type="checkbox" class="optDry" checked style="accent-color:#0f0f1a;width:16px;height:16px"><span><b>Mode prova</b> · no modifica res, només comprova</span></label><div class="optMsg" style="font-size:12px;color:#dc2626;min-height:18px;margin:10px 0;text-align:center"></div><div style="display:flex;gap:10px"><button class="optNo" style="' +
+      '">Cap</button></div></div><div class="optG" style="max-height:200px;overflow-y:auto;border:1px solid #f0f0f0;border-radius:12px"></div><label style="display:flex;align-items:center;gap:10px;margin-top:14px;padding:12px 14px;border:1.5px solid #e5e7eb;border-radius:12px;cursor:pointer;font-size:13px;color:#374151"><input type="checkbox" class="optDry" style="accent-color:#0f0f1a;width:16px;height:16px"><span><b>🩺 Només diagnòstic</b> · no modifica res, et diu què passaria a cada grup</span></label><label style="display:flex;align-items:center;gap:10px;margin-top:8px;padding:12px 14px;border:1.5px solid #e5e7eb;border-radius:12px;cursor:pointer;font-size:13px;color:#374151"><input type="checkbox" class="optOwA" style="accent-color:#16a34a;width:16px;height:16px"><span><b>Sobreescriure-ho tot</b> · notes i comentaris existents, sense preguntar</span></label><div class="optMsg" style="font-size:12px;color:#dc2626;min-height:18px;margin:10px 0;text-align:center"></div><div style="display:flex;gap:10px"><button class="optNo" style="' +
       F +
       'flex:1;padding:13px;font-size:14px;font-weight:600;border:1.5px solid #e5e7eb;border-radius:12px;background:transparent;color:#9ca3af;cursor:pointer">Cancel·lar</button><button class="optGo" style="' +
       F +
@@ -1000,12 +1165,12 @@ function assignaNoms(files,entrades){
       ]) +
       sec("Comentaris", [
         "⚡ S'escriuen tots de cop a les dades de la pàgina, sense obrir cada alumne. Si cal, ho fa per la finestra.",
-        "🛡️ Si un alumne ja té comentari, et mostra el que hi ha i tries alumne per alumne si el vols sobreescriure (verd) o no (vermell). Si no decideixes, no es toca.",
+        "🛡️ Si un alumne ja té una nota o un comentari diferent, et mostra el que hi ha i tries un per un si el vols sobreescriure (verd) o no (vermell). Si no decideixes (blau), no es toca. Pots marcar «Sobreescriure-ho tot» abans d'executar, o dins el diàleg, per no haver-ho de preguntar.",
       ]) +
       sec("Grups i matèries", [
         "🗂️ Només entra als grups que marquis i desa cada un abans de passar al següent.",
         "📚 Si en un grup tens més d'una matèria, et deixa triar-ne una i la recorda.",
-        "🧪 El mode prova només comprova quins alumnes troba a cada grup.",
+        "🩺 Si marques «Només diagnòstic», no es canvia res: per a cada grup et diu quins alumnes ha trobat, què escriuria (nota o comentari nou), què sobreescriuria, quines notes no són vàlides per al camp i quins alumnes del grup no surten a la teva llista.",
         "🔒 Si el camp està bloquejat, l'alumne es detecta però no es modifica res.",
       ]) +
       "</div>";
@@ -1016,6 +1181,7 @@ function assignaNoms(files,entrades){
     };
     dlg = cO(H + I, closeAll);
     const box = dlg.box;
+    box.style.width = "min(640px,92vw)";
     const gd = box.querySelector(".optG"),
       ta = box.querySelector(".optTA"),
       cnt = box.querySelector(".optCnt"),
@@ -1164,6 +1330,12 @@ function assignaNoms(files,entrades){
         (sn.length ? (k ? " · " : "") + "⚠️ " + sn.length + (sn.length > 1 ? " files" : " fila") + " sense nom (" + sn.join(", ") + ")" : "");
     }
     for (let i = 0; i < 6; i++) addRow();
+    const dryCb = box.querySelector(".optDry"),
+      goBtn = box.querySelector(".optGo");
+    dryCb.onchange = () => {
+      goBtn.textContent = dryCb.checked ? "Diagnosticar →" : "Executar →";
+      goBtn.style.background = dryCb.checked ? "#2563eb" : "#0f0f1a";
+    };
     box.querySelector(".optClr").onclick = () => {
       gridRows.forEach((tr) => cellsOf(tr).forEach((x) => (x.value = "")));
       msg.textContent = "";
@@ -1183,6 +1355,7 @@ function assignaNoms(files,entrades){
     box.querySelector(".optGo").onclick = function () {
       let t = ta.value,
         d = box.querySelector(".optDry").checked,
+        oa = (owAuto = box.querySelector(".optOwA").checked),
         sel = Array.from(gd.querySelectorAll("input:checked")).map((c) => c.value);
       if (gridState.sensenom.length) {
         msg.textContent =
